@@ -17,7 +17,8 @@ const app = express();
 const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
-
+const server = require("http").createServer(app);
+const io = require("socket.io")(server, { cors: { origin: "*" } });
 
 try {
   sequelizeInstance.authenticate();
@@ -46,7 +47,7 @@ try {
   app.use('/api/v1/ecommerce', ecommerce(models));
   app.use('/api/v1/emall', emall(models));
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
   });
 
