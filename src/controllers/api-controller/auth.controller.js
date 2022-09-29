@@ -273,7 +273,7 @@ function getAddress (models) {
 function testing (models) {
   return async (req, res, next) => {
     try {
-			return OK(res);
+			return OK(res, {data: 'perubahan tester'});
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
