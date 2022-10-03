@@ -24,8 +24,10 @@ try {
   sequelizeInstance.authenticate();
   console.log('Connection has been established successfully.');
   
-  const corsOptions = { origin: "http://localhost:3000" };
-  app.use(cors(corsOptions));
+  // const corsOptions = { origin: "http://localhost:3000" };
+  // app.use(cors(corsOptions));
+  app.use(cors({credentials:true, origin:'*'}));
+  app.options("*", cors());
   // parse requests of content-type - application/json
   app.use(express.json());
   // parse requests of content-type - application/x-www-form-urlencoded

@@ -1,5 +1,5 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../utils/response.utils');
-const { _buildResponseAdmin, _buildResponsePeserta } = require('../utils/build-response');
+// const { _buildResponseAdmin, _buildResponsePeserta } = require('../utils/build-response');
 const { encrypt, decrypt } = require('../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
@@ -17,34 +17,38 @@ function getAdmin (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
+				
 			}
 			if(level) { 
 				where = {
 					level: level,
 					statusAktif: true
 				}
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataAdmin = await models.Admin.findAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				include: [
-					{
-						model: models.Role,
-						attributes: ['namaRole']
-					}
-				],
 				order
 			});
 
-			return OK(res, await _buildResponseAdmin(dataAdmin));
+			const getResult = await Promise.all(dataAdmin.map(async (val) => {
+				let dataRole = await models.Role.findOne({
+					where: { idRole: val.level },
+					attributes: ['namaRole'],
+				});
+	
+				let dataKumpul = Object.assign(val.dataValues, {
+					namaRole: dataRole.namaRole,
+				})
+				return dataKumpul;
+			}))
+
+			return OK(res, getResult);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
