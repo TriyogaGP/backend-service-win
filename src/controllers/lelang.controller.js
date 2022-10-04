@@ -284,7 +284,7 @@ function getEvent (models) {
 					tanggalEvent: convertDate(val.dataValues.tanggalEvent),
 					startEvent: dateconvert(val.dataValues.tanggalEvent)+' '+val.dataValues.waktuEvent,
 					kodeevent_split: splitkodeevent[2],
-					gambar: BASE_URL+'image/event/'+val.dataValues.gambar
+					// gambar: BASE_URL+'image/event/'+val.dataValues.gambar
 				});
 				return dataKumpul.push(objectBaru)
 			})
@@ -382,11 +382,11 @@ function getLot (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataLot = await models.LOT.findAll({
 				where,
@@ -395,6 +395,12 @@ function getLot (models) {
 					{ 
 						model: models.BarangLelang,
 						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+						include: [
+							{ 
+								model: models.KategoriLelang,
+								attributes: ['kategori', 'statusAktif'],
+							},
+						]
 					},
 					{ 
 						model: models.Event,
@@ -554,9 +560,13 @@ function getNPL (models) {
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
-			if(id_event && id_peserta) { 
+			if(id_event) { 
 				where = {
 					idEvent: id_event,
+				}
+			}
+			if(id_peserta) { 
+				where = {
 					idPeserta: id_peserta,
 				}
 			}
@@ -578,7 +588,7 @@ function getNPL (models) {
 				]
 			});
 			
-			return OK(res, await _buildResponseNPL(models, kategori, dataPembelianNPL));
+			return OK(res, await _buildResponseNPL(models, kategori, id_event, dataPembelianNPL));
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }

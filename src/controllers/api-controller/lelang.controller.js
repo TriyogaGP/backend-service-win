@@ -1,5 +1,5 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../../utils/response.utils');
-const { _buildResponseLelang, _buildResponseDetailLelang, _buildResponseLotLelang, _buildResponseDetailLot, _buildResponsePembelianNPL } = require('../../utils/build-response');
+const { _buildResponseLelang, _buildResponseDetailLelang, _buildResponseLotLelang, _buildResponseDetailLot, _buildResponsePembelianNPL } = require('../../utils/build-response-json');
 const { encrypt, decrypt, convertDate, makeRandomAngka, convertDateGabung } = require('../../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')

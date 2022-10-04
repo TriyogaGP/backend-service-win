@@ -1,5 +1,5 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../../utils/response.utils');
-const { _buildResponseProduk, _buildResponseDetailProduk, _buildResponsePromosi, _buildResponseWishlist } = require('../../utils/build-response');
+const { _buildResponseProduk, _buildResponseDetailProduk, _buildResponsePromosi, _buildResponseWishlist } = require('../../utils/build-response-json');
 const { encrypt, decrypt, convertDate } = require('../../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')

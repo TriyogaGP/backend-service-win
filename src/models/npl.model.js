@@ -112,6 +112,10 @@ module.exports = {
         foreignKey: 'idPembelianNPL',
         constraint: false
       });
+      models.NPL.belongsTo(models.RefundNPL, {
+        foreignKey: 'idNpl',
+        constraint: false
+      });
     }
     return NPL;
   },

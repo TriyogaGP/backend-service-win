@@ -1,7 +1,4 @@
 const { convertDateTime, dateconvert, convertDate } = require('./helper.utils');
-const dotenv = require('dotenv');
-dotenv.config();
-const BASE_URL = process.env.BASE_URL
 
 function _buildResponseMenu(dataMenu) {
 	return dataMenu.map(val => {
@@ -89,14 +86,8 @@ function _buildResponseAdmin(dataAdmin, refreshToken, accessToken) {
 }
 
 function _buildResponsePeserta(dataPeserta, refreshToken, accessToken) {
-	let dataKumpul = Object.assign(dataPeserta, {
-		fotoPeserta: BASE_URL+'image/berkas/'+dataPeserta.fotoPeserta,
-		fotoKTP: BASE_URL+'image/berkas/'+dataPeserta.fotoKTP,
-		fotoNPWP: BASE_URL+'image/berkas/'+dataPeserta.fotoNPWP,
-	})
-
 	return {
-		...dataKumpul.dataValues,
+		...dataPeserta.dataValues,
 		refreshToken,
 		accessToken
 	}
@@ -113,7 +104,7 @@ async function _buildResponseBarangLelang(models, dataBarangLelang) {
 		.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
 		.map(val2 => {
 			// let objectBaru = Object.assign(val2, {
-			// 	gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
+			// 	gambar: val2.gambar
 			// });
 			// return objectBaru
 			return val2
@@ -185,10 +176,7 @@ async function _buildResponseProduk(models, dataProduk) {
 		dataKumpul = dataFotoProduk
 		.filter(barleng => barleng.idProduk === val.idProduk)
 		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/produk/'+val2.gambar
-			});
-			return objectBaru
+			return val2
 		})
 
 		dataUpdateStok
@@ -257,23 +245,21 @@ async function _buildResponseLot(models, dataLot) {
 		dataKumpulFoto = dataFotoBarangLelang
 		.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
 		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
-			});
-			return objectBaru
+			return val2
 		})
 
-		let dataBarLel = Object.assign(val.BarangLelang, {
-			stnk: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.stnk,
-			bpkb: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.bpkb,
-			faktur: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.faktur,
-			ktpPemilik: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.ktpPemilik,
-			kwitansi: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.kwitansi,
-		});
+		let dataBarLel = {
+			...val.BarangLelang.dataValues, 
+			KategoriLelang: {
+				namaKategori: val.BarangLelang.dataValues.KategoriLelang.kategori, 
+				statusKategoriLelang: val.BarangLelang.dataValues.KategoriLelang.statusAktif 
+			}
+		};
 
-		let dataEvent = Object.assign(val.Event, {
-			gambar: BASE_URL+'image/event/'+val.Event.gambar
-		});
+		let dataEvent = {
+			...val.Event.dataValues, 
+			startEvent: dateconvert(val.Event.dataValues.tanggalEvent)+' '+val.Event.dataValues.waktuEvent
+		};
 
 		return {
 			idLot: val.idLot,
@@ -288,12 +274,18 @@ async function _buildResponseLot(models, dataLot) {
 	})
 }
 
-async function _buildResponseNPL(models, kategori = null, dataPembelianNPL) {
-	if(kategori) {
+async function _buildResponseNPL(models, kategori = null, id_event, dataPembelianNPL) {
+	if(kategori == 'withNPL') {
 		const dataNPL = await models.NPL.findAll({
-			attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+			attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+			include: [
+				{
+					model: models.RefundNPL,
+					attributes: { exclude: ['createBy', 'updateBy', 'createdAt', 'updatedAt'] },
+				}
+			]
 		});
-
+		
 		let dataKumpulNPL = []
 		return dataPembelianNPL.map(val => {
 			dataKumpulNPL = dataNPL
@@ -313,17 +305,34 @@ async function _buildResponseNPL(models, kategori = null, dataPembelianNPL) {
 				nominal: val.nominal,
 				tanggalTransfer: convertDateTime(val.tanggalTransfer),
 				pesanVerifikasi: val.pesanVerifikasi,
-				bukti: BASE_URL+'image/berkas/'+val.bukti,
+				bukti: val.bukti,
 				statusAktif: val.statusAktif,
+				nik: val.User.nik,
 				nama: val.User.nama,
 				email: val.User.email,
 				noHP: val.User.noHP,
+				statusPeserta: val.User.statusAktif,
 				kodeEvent: val.Event.kodeEvent,
 				namaEvent: val.Event.namaEvent,
 				tanggalEvent: dateconvert(val.Event.tanggalEvent)+' '+val.Event.waktuEvent,
+				statusEvent: val.Event.statusAktif,
 				NPL: dataKumpulNPL,
 			}
 		})	
+	}
+
+	if(kategori == 'NPL') {
+		const dataNPL = await models.NPL.findOne({
+			where: { idEvent: id_event },
+			attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+			order: [
+				['idNpl', 'DESC'],
+			]
+		});
+
+		return {
+			dataNPL,
+		}
 	}
 
 	return dataPembelianNPL.map(val => {
@@ -338,14 +347,17 @@ async function _buildResponseNPL(models, kategori = null, dataPembelianNPL) {
 			nominal: val.nominal,
 			tanggalTransfer: convertDateTime(val.tanggalTransfer),
 			pesanVerifikasi: val.pesanVerifikasi,
-			bukti: BASE_URL+'image/berkas/'+val.bukti,
+			bukti: val.bukti,
 			statusAktif: val.statusAktif,
+			nik: val.User.nik,
 			nama: val.User.nama,
 			email: val.User.email,
 			noHP: val.User.noHP,
+			statusPeserta: val.User.statusAktif,
 			kodeEvent: val.Event.kodeEvent,
 			namaEvent: val.Event.namaEvent,
 			tanggalEvent: dateconvert(val.Event.tanggalEvent)+' '+val.Event.waktuEvent,
+			statusEvent: val.Event.statusAktif,
 		}
 	})
 }
@@ -360,32 +372,32 @@ async function _buildResponsePemenang(models, dataPemenang) {
 		dataKumpulFoto = dataFotoBarangLelang
 		.filter(barleng => barleng.idBarangLelang === val.Bidding.LOT.idBarangLelang)
 		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
-			});
-			return objectBaru
+			// let objectBaru = Object.assign(val2, {
+			// 	gambar: val2.gambar
+			// });
+			return val2
 		})
 
 		let dataBarLel = Object.assign(val.Bidding.LOT.PembelianNPL, {
-			stnk: BASE_URL+'image/kelengkapan-barang-lelang/'+val.Bidding.LOT.BarangLelang.stnk,
-			bpkb: BASE_URL+'image/kelengkapan-barang-lelang/'+val.Bidding.LOT.BarangLelang.bpkb,
-			faktur: BASE_URL+'image/kelengkapan-barang-lelang/'+val.Bidding.LOT.BarangLelang.faktur,
-			ktpPemilik: BASE_URL+'image/kelengkapan-barang-lelang/'+val.Bidding.LOT.BarangLelang.ktpPemilik,
-			kwitansi: BASE_URL+'image/kelengkapan-barang-lelang/'+val.Bidding.LOT.BarangLelang.kwitansi,
+			stnk: val.Bidding.LOT.BarangLelang.stnk,
+			bpkb: val.Bidding.LOT.BarangLelang.bpkb,
+			faktur: val.Bidding.LOT.BarangLelang.faktur,
+			ktpPemilik: val.Bidding.LOT.BarangLelang.ktpPemilik,
+			kwitansi: val.Bidding.LOT.BarangLelang.kwitansi,
 		});
 
 		let dataEvent = Object.assign(val.Bidding.LOT.Event, {
-			gambar: BASE_URL+'image/event/'+val.Bidding.LOT.Event.gambar
+			gambar: val.Bidding.LOT.Event.gambar
 		});
 
 		let dataPembelianNPL = Object.assign(val.Bidding.NPL.PembelianNPL, {
-			bukti: BASE_URL+'image/berkas/'+val.Bidding.NPL.PembelianNPL.bukti
+			bukti: val.Bidding.NPL.PembelianNPL.bukti
 		});
 
 		let dataUser = Object.assign(val.Bidding.NPL.User, {
-			fotoPeserta: BASE_URL+'image/berkas/'+val.Bidding.NPL.User.fotoPeserta,
-			fotoKTP: BASE_URL+'image/berkas/'+val.Bidding.NPL.User.fotoKTP,
-			fotoNPWP: BASE_URL+'image/berkas/'+val.Bidding.NPL.User.fotoNPWP
+			fotoPeserta: val.Bidding.NPL.User.fotoPeserta,
+			fotoKTP: val.Bidding.NPL.User.fotoKTP,
+			fotoNPWP: val.Bidding.NPL.User.fotoNPWP
 		});
 
 		return {
@@ -396,7 +408,7 @@ async function _buildResponsePemenang(models, dataPemenang) {
 			tanggalTransfer: val.tanggalTransfer,
 			tipePelunasan: val.tipePelunasan,
 			statusPembayaran: val.statusPembayaran,
-			bukti: BASE_URL+'image/bukti-pemenang/'+val.bukti,
+			bukti: val.bukti,
 			statusAktif: val.statusAktif,
 			data_bidding_terakhir: {
 				idBidding: val.Bidding.idBidding,
@@ -529,10 +541,7 @@ async function _buildResponseWishlist(models, dataWishlist) {
 		dataKumpul = dataFotoProduk
 		.filter(barleng => barleng.idProduk === val.idProduk)
 		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/produk/'+val2.gambar
-			});
-			return objectBaru
+			return val2
 		})
 
 		return {
@@ -562,7 +571,7 @@ function _buildResponseMall(dataMall) {
 			kota: val.kota,
 			noWhatsapp: val.noWhatsapp,
 			UnixText: val.UnixText,
-			logo: BASE_URL+'image/mall/'+val.logo,
+			logo: val.logo,
 			nama: val.Admin.nama,
 			email: val.Admin.email,
 			noHP: val.Admin.noHP,
@@ -587,13 +596,13 @@ function _buildResponseTenantMall(dataTenantMall) {
 			provinsi: val.provinsi,
 			noWhatsapp: val.noWhatsapp,
 			UnixText: val.UnixText,
-			logo: BASE_URL+'image/mall/'+val.logo,
+			logo: val.logo,
 			kategoriTenant: val.KategoriTenant.kategoriTenant,
 			nama: val.Admin.nama,
 			email: val.Admin.email,
 			noHP: val.Admin.noHP,
 			namaMall: val.Mall.namaMall,
-			logoMall: BASE_URL+'image/mall/'+val.Mall.logo,
+			logoMall: val.Mall.logo,
 			statusAktif: val.statusAktif,
 		}
 	})
@@ -609,7 +618,7 @@ function _buildResponseContent(kategori, dataContent) {
 				judulContent: val.judulContent,
 				link: val.link,
 				deskripsi: val.deskripsi,
-				foto: BASE_URL+'image/mall/'+val.foto,
+				foto: val.foto,
 				kategoriContent: val.KategoriContent.kategoriContent,
 				namaMall: val.Mall.namaMall,
 				statusAktif: val.statusAktif,
@@ -624,476 +633,13 @@ function _buildResponseContent(kategori, dataContent) {
 				judulContent: val.judulContent,
 				link: val.link,
 				deskripsi: val.deskripsi,
-				foto: BASE_URL+'image/mall/'+val.foto,
+				foto: val.foto,
 				kategoriContent: val.KategoriContent.kategoriContent,
 				namaTenantMall: val.TenantMall.namaTenantMall,
 				statusAktif: val.statusAktif,
 			}
 		})
 	}
-}
-
-async function _buildResponseLelang(models, dataLelang) {
-	const dataFotoBarangLelang = await models.FotoBarangLelang.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	});
-
-	let dataKumpul = []
-	return dataLelang.map(val => {
-		dataKumpul = dataFotoBarangLelang
-		.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
-		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
-			});
-			return objectBaru
-		})
-
-		return {
-			idBarangLelang: val.idBarangLelang,
-			idKategori: val.idKategori,
-			namaKategori: val.KategoriLelang.kategori,
-			namaBarangLelang: val.namaBarangLelang,
-			brand: val.brand,
-			warna: val.warna,
-			tahun: val.tahun,
-			lokasiBarang: val.lokasiBarang,
-			noRangka: val.noRangka,
-			noMesin: val.noMesin,
-			tipeModel: val.tipeModel,
-			transmisi: val.transmisi,
-			bahanBakar: val.bahanBakar,
-			odometer: val.odometer,
-			grade: val.grade,
-			gradeInterior: val.gradeInterior,
-			gradeEksterior: val.gradeEksterior,
-			gradeMesin: val.gradeMesin,
-			noPolisi: val.noPolisi,
-			validSTNK: val.validSTNK ? convertDate(val.validSTNK) : null,
-			sph: val.sph,
-			kir: val.kir,
-			kapasitasKendaraan: val.kapasitasKendaraan,
-			deskripsi: val.deskripsi,
-			UnixText: val.UnixText,
-			stnk: BASE_URL+'image/kelengkapan-barang-lelang/'+val.stnk,
-			bpkb: BASE_URL+'image/kelengkapan-barang-lelang/'+val.bpkb,
-			faktur: BASE_URL+'image/kelengkapan-barang-lelang/'+val.faktur,
-			ktpPemilik: BASE_URL+'image/kelengkapan-barang-lelang/'+val.ktpPemilik,
-			kwitansi: BASE_URL+'image/kelengkapan-barang-lelang/'+val.kwitansi,
-			idLot: val.idLot,
-			noLot: val.LOT ? val.LOT.noLot : null,
-			hargaAwal: val.LOT ? val.LOT.hargaAwal : null,
-			statusLot: val.LOT ? val.LOT.statusLot == 0 ? "Tidak Aktif" : val.LOT.statusLot == 1 ? "Aktif" : val.LOT.statusLot == 2 ? "Lelang" : "Terjual" : null,
-			tanggalevent: val.LOT ? convertDateTime(convertDate(val.LOT.Event.tanggalEvent) + " " + val.LOT.Event.waktuEvent) : null,
-			kodeEvent: val.LOT ? val.LOT.Event.kodeEvent : null,
-			passEvent: val.LOT ? val.LOT.Event.passEvent : null,
-			kataSandiEvent: val.LOT ? val.LOT.Event.kataSandiEvent : null,
-			namaEvent: val.LOT ? val.LOT.Event.namaEvent : null,
-			deskripsiEvent: val.LOT ? val.LOT.Event.deskripsiEvent : null,
-			kelipatanBid: val.LOT ? val.LOT.Event.kelipatanBid : null,
-			gambar: val.LOT ? BASE_URL+'image/event/'+val.LOT.Event.gambar : null,
-			alamatEvent: val.LOT ? val.LOT.Event.alamatEvent : null,
-			linkMaps: val.LOT ? val.LOT.Event.linkMaps : null,
-			statusAktif: val.statusAktif,
-			dataFotoBarangLelang: dataKumpul,
-		}
-	})
-}
-
-async function _buildResponseDetailLelang(models, dataLelang) {
-	const dataFotoBarangLelang = await models.FotoBarangLelang.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	});
-
-	let dataKumpul = []
-	return dataLelang.map(val => {
-		dataKumpul = dataFotoBarangLelang
-		.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
-		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
-			});
-			return objectBaru
-		})
-
-		let detailBarangAtas = []
-		let detailBarang = []
-
-		if(val.KategoriLelang.kategori == 'Mobil' || val.KategoriLelang.kategori == 'Motor'){
-			detailBarangAtas = [
-				{ icon: BASE_URL+'bahan/bahanbakar.png', name: 'Bahan Bakar', text: val.bahanBakar },
-				{ icon: BASE_URL+'bahan/transmisi.png', name: 'Transmisi', text: val.transmisi },
-				{ icon: BASE_URL+'bahan/seat.png', name: 'Kapasitas', text: val.kapasitasKendaraan },
-				{ icon: BASE_URL+'bahan/pintu.png', name: 'Pintu', text: 'Empat (4)' },
-			]
-			detailBarang = [
-				{ icon: BASE_URL+'bahan/nopol.png', name: 'No Polisi', text: val.noPolisi },
-				{ icon: BASE_URL+'bahan/model.png', name: 'Tipe / Model', text: val.tipeModel },
-				{ icon: BASE_URL+'bahan/warna.png', name: 'Warna', text: val.warna },
-				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Mesin', text: val.noMesin },
-				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Rangka', text: val.noRangka },
-				{ icon: BASE_URL+'bahan/kilometer.png', name: 'Kilometer', text: val.odometer },
-			]
-		}
-
-		return {
-			idBarangLelang: val.idBarangLelang,
-			idKategori: val.idKategori,
-			namaKategori: val.KategoriLelang.kategori,
-			namaBarangLelang: val.namaBarangLelang,
-			brand: val.brand,
-			warna: val.warna,
-			tahun: val.tahun,
-			lokasiBarang: val.lokasiBarang,
-			noRangka: val.noRangka,
-			noMesin: val.noMesin,
-			tipeModel: val.tipeModel,
-			transmisi: val.transmisi,
-			bahanBakar: val.bahanBakar,
-			odometer: val.odometer,
-			grade: val.grade,
-			gradeInterior: val.gradeInterior,
-			gradeEksterior: val.gradeEksterior,
-			gradeMesin: val.gradeMesin,
-			noPolisi: val.noPolisi,
-			validSTNK: val.validSTNK ? convertDate(val.validSTNK) : null,
-			stnk: BASE_URL+'image/kelengkapan-barang-lelang/'+val.stnk,
-			bpkb: BASE_URL+'image/kelengkapan-barang-lelang/'+val.bpkb,
-			faktur: BASE_URL+'image/kelengkapan-barang-lelang/'+val.faktur,
-			ktp_pemilik: BASE_URL+'image/kelengkapan-barang-lelang/'+val.ktpPemilik,
-			kwitansi: BASE_URL+'image/kelengkapan-barang-lelang/'+val.kwitansi,
-			sph: val.sph,
-			kir: val.kir,
-			kapasitasKendaraan: val.kapasitasKendaraan,
-			deskripsi: val.deskripsi,
-			idLot: val.idLot,
-			noLot: val.LOT ? val.LOT.noLot : null,
-			hargaAwal: val.LOT ? val.LOT.hargaAwal : null,
-			statusLot: val.LOT ? val.LOT.statusLot == 0 ? "Tidak Aktif" : val.LOT.statusLot == 1 ? "Aktif" : val.LOT.statusLot == 2 ? "Lelang" : "Terjual" : null,
-			tanggalevent: val.LOT ? convertDateTime(convertDate(val.LOT.Event.tanggalEvent) + " " + val.LOT.Event.waktuEvent) : null,
-			kodeEvent: val.LOT ? val.LOT.Event.kodeEvent : null,
-			passEvent: val.LOT ? val.LOT.Event.passEvent : null,
-			kataSandiEvent: val.LOT ? val.LOT.Event.kataSandiEvent : null,
-			namaEvent: val.LOT ? val.LOT.Event.namaEvent : null,
-			deskripsiEvent: val.LOT ? val.LOT.Event.deskripsiEvent : null,
-			kelipatanBid: val.LOT ? val.LOT.Event.kelipatanBid : null,
-			gambar: val.LOT ? BASE_URL+'image/event/'+val.LOT.Event.gambar : null,
-			alamatEvent: val.LOT ? val.LOT.Event.alamatEvent : null,
-			linkMaps: val.LOT ? val.LOT.Event.linkMaps : null,
-			statusAktif: val.statusAktif,
-			detailBarangAtas,
-			detailBarang,
-			dataFotoBarangLelang: dataKumpul,
-		}
-	})
-}
-
-async function _buildResponseDetailProduk(models, dataProduk) {
-	const dataFotoProduk = await models.FotoProduk.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	});
-
-	const dataUpdateStok = await models.UpdateStok.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	});
-
-	const dataFeedbackUser = await models.FeedbackUser.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-		include: [
-			{
-				model: models.User,
-				attributes: ['nama', 'email', 'noHP'],
-			}
-		] 
-	});
-
-	let dataKumpul = [], kumpulFeed = []
-	let sisaStok = 0
-	let rateProduk = 0
-	return dataProduk.map(val => {
-		let stokMasuk = 0, stokKeluar = 0, rating = 0, jumlahProduk = 0
-		
-		dataKumpul = dataFotoProduk
-		.filter(barleng => barleng.idProduk === val.idProduk)
-		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/produk/'+val2.gambar
-			});
-			return objectBaru
-		})
-
-		dataUpdateStok
-		.filter(stok => stok.idProduk === val.idProduk)
-		.map((val2) => {
-			if(val2.statusAktif == 1){
-				stokMasuk += val2.tambahStok
-				stokKeluar += val2.kurangStok
-			}
-		})
-
-		kumpulFeed = dataFeedbackUser
-		.filter(feedback => feedback.idProduk === val.idProduk)
-		.map(val2 => {
-			rating += val2.rating
-			jumlahProduk += 1
-			let objectBaru = {
-				idFeedbackPeserta: val2.idFeedbackPeserta,
-				idOrder: val2.idOrder,
-				idPeserta: val2.idPeserta,
-				rating: val2.rating,
-				comment: val2.comment,
-				gambar: val2.gambar ? JSON.parse([val2.gambar]) : [],
-				nama: val2.User.nama,
-				email: val2.User.email,
-				noHP: val2.User.noHP
-			};
-			return objectBaru
-		})
-
-		sisaStok = parseInt(stokMasuk) - parseInt(stokKeluar)
-		rateProduk = parseInt(rating) / parseInt(jumlahProduk)
-
-		return {
-			idProduk: val.idProduk,
-			idKategoriProduk: val.idKategoriProduk,
-			kategoriProduk: val.KategoriProduk.kategoriProduk,
-			idMeasurement: val.idMeasurement,
-			name: val.Measurement.name,
-			displayName: val.Measurement.displayName,
-			kodeProduk: val.kodeProduk,
-			merekProduk: val.merekProduk,
-			namaProduk: val.namaProduk,
-			harga: val.harga,
-			stok: val.stok,
-			berat: val.berat,
-			point: val.point,
-			deskripsi: val.deskripsi,
-			UnixText: val.UnixText,
-			statusAktif: val.statusAktif,
-			sisaStok: sisaStok ? sisaStok : 0,
-			rateProduk: rateProduk ? rateProduk : 0,
-			dataFotoProduk: dataKumpul,
-			dataFeedbackUser: kumpulFeed,
-		}
-	})
-}
-
-async function _buildResponseLotLelang(models, dataLelang) {
-	const dataFotoBarangLelang = await models.FotoBarangLelang.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	});
-
-	let dataKumpul = []
-	return dataLelang.map(val => {
-		dataKumpul = dataFotoBarangLelang
-		.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
-		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
-			});
-			return objectBaru
-		})
-
-		return {
-			idLot: val.idLot,
-			idBarangLelang: val.idBarangLelang,
-			idKategori: val.idKategori,
-			namaKategori: val.BarangLelang.KategoriLelang.kategori,
-			noLot: val.noLot,
-			hargaAwal: val.hargaAwal,
-			statusLot: val.statusLot == 0 ? "Tidak Aktif" : val.statusLot == 1 ? "Aktif" : val.statusLot == 2 ? "Lelang" : "Terjual",
-			namaBarangLelang: val.BarangLelang.namaBarangLelang,
-			brand: val.BarangLelang.brand,
-			warna: val.BarangLelang.warna,
-			tahun: val.BarangLelang.tahun,
-			lokasiBarang: val.BarangLelang.lokasiBarang,
-			noRangka: val.BarangLelang.noRangka,
-			noMesin: val.BarangLelang.noMesin,
-			tipeModel: val.BarangLelang.tipeModel,
-			transmisi: val.BarangLelang.transmisi,
-			bahanBakar: val.BarangLelang.bahanBakar,
-			odometer: val.BarangLelang.odometer,
-			grade: val.BarangLelang.grade,
-			gradeInterior: val.BarangLelang.gradeInterior,
-			gradeEksterior: val.BarangLelang.gradeEksterior,
-			gradeMesin: val.BarangLelang.gradeMesin,
-			noPolisi: val.BarangLelang.noPolisi,
-			validSTNK: val.BarangLelang.validSTNK ? convertDate(val.BarangLelang.validSTNK) : null,
-			stnk: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.stnk,
-			bpkb: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.bpkb,
-			faktur: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.faktur,
-			ktp_pemilik: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.ktpPemilik,
-			kwitansi: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.kwitansi,
-			sph: val.BarangLelang.sph,
-			kir: val.BarangLelang.kir,
-			kapasitasKendaraan: val.BarangLelang.kapasitasKendaraan,
-			deskripsi: val.BarangLelang.deskripsi,
-			idEvent: val.Event.idEvent,
-			tanggalevent: convertDateTime(convertDate(val.Event.tanggalEvent) + " " + val.Event.waktuEvent),
-			kodeEvent: val.Event.kodeEvent,
-			passEvent: val.Event.passEvent,
-			kataSandiEvent: val.Event.kataSandiEvent,
-			namaEvent: val.Event.namaEvent,
-			deskripsiEvent: val.Event.deskripsiEvent,
-			kelipatanBid: val.Event.kelipatanBid,
-			gambar: BASE_URL+'image/event/'+val.Event.gambar,
-			alamatEvent: val.Event.alamatEvent,
-			linkMaps: val.Event.linkMaps,
-			statusAktif: val.statusAktif,
-			dataFotoBarangLelang: dataKumpul,
-		}
-	})
-}
-
-async function _buildResponseDetailLot(models, dataLot) {
-	const dataFotoBarangLelang = await models.FotoBarangLelang.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	});
-
-	let dataKumpul = []
-	return dataLot.map(val => {
-		dataKumpul = dataFotoBarangLelang
-		.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
-		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
-			});
-			return objectBaru
-		})
-
-		let detailBarangAtas = []
-		let detailBarang = []
-
-		if(val.BarangLelang.KategoriLelang.kategori == 'Mobil' || val.BarangLelang.KategoriLelang.kategori == 'Motor'){
-			detailBarangAtas = [
-				{ icon: BASE_URL+'bahan/bahanbakar.png', name: 'Bahan Bakar', text: val.bahanBakar },
-				{ icon: BASE_URL+'bahan/transmisi.png', name: 'Transmisi', text: val.transmisi },
-				{ icon: BASE_URL+'bahan/seat.png', name: 'Kapasitas', text: val.kapasitasKendaraan },
-				{ icon: BASE_URL+'bahan/pintu.png', name: 'Pintu', text: 'Empat (4)' },
-			]
-			detailBarang = [
-				{ icon: BASE_URL+'bahan/nopol.png', name: 'No Polisi', text: val.noPolisi },
-				{ icon: BASE_URL+'bahan/model.png', name: 'Tipe / Model', text: val.tipeModel },
-				{ icon: BASE_URL+'bahan/warna.png', name: 'Warna', text: val.warna },
-				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Mesin', text: val.noMesin },
-				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Rangka', text: val.noRangka },
-				{ icon: BASE_URL+'bahan/kilometer.png', name: 'Kilometer', text: val.odometer },
-			]
-		}
-
-		return {
-			idLot: val.idLot,
-			idBarangLelang: val.idBarangLelang,
-			idKategori: val.idKategori,
-			namaKategori: val.BarangLelang.KategoriLelang.kategori,
-			noLot: val.noLot,
-			hargaAwal: val.hargaAwal,
-			statusLot: val.statusLot == 0 ? "Tidak Aktif" : val.statusLot == 1 ? "Aktif" : val.statusLot == 2 ? "Lelang" : "Terjual",
-			namaBarangLelang: val.BarangLelang.namaBarangLelang,
-			brand: val.BarangLelang.brand,
-			warna: val.BarangLelang.warna,
-			tahun: val.BarangLelang.tahun,
-			lokasiBarang: val.BarangLelang.lokasiBarang,
-			noRangka: val.BarangLelang.noRangka,
-			noMesin: val.BarangLelang.noMesin,
-			tipeModel: val.BarangLelang.tipeModel,
-			transmisi: val.BarangLelang.transmisi,
-			bahanBakar: val.BarangLelang.bahanBakar,
-			odometer: val.BarangLelang.odometer,
-			grade: val.BarangLelang.grade,
-			gradeInterior: val.BarangLelang.gradeInterior,
-			gradeEksterior: val.BarangLelang.gradeEksterior,
-			gradeMesin: val.BarangLelang.gradeMesin,
-			noPolisi: val.BarangLelang.noPolisi,
-			validSTNK: val.BarangLelang.validSTNK ? convertDate(val.BarangLelang.validSTNK) : null,
-			stnk: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.stnk,
-			bpkb: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.bpkb,
-			faktur: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.faktur,
-			ktp_pemilik: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.ktpPemilik,
-			kwitansi: BASE_URL+'image/kelengkapan-barang-lelang/'+val.BarangLelang.kwitansi,
-			sph: val.BarangLelang.sph,
-			kir: val.BarangLelang.kir,
-			kapasitasKendaraan: val.BarangLelang.kapasitasKendaraan,
-			deskripsi: val.BarangLelang.deskripsi,
-			idEvent: val.Event.idEvent,
-			tanggalevent: convertDateTime(convertDate(val.Event.tanggalEvent) + " " + val.Event.waktuEvent),
-			kodeEvent: val.Event.kodeEvent,
-			passEvent: val.Event.passEvent,
-			kataSandiEvent: val.Event.kataSandiEvent,
-			namaEvent: val.Event.namaEvent,
-			deskripsiEvent: val.Event.deskripsiEvent,
-			kelipatanBid: val.Event.kelipatanBid,
-			gambar: BASE_URL+'image/event/'+val.Event.gambar,
-			alamatEvent: val.Event.alamatEvent,
-			linkMaps: val.Event.linkMaps,
-			statusAktif: val.statusAktif,
-			detailBarangAtas,
-			detailBarang,
-			dataFotoBarangLelang: dataKumpul,
-		}
-	})
-}
-
-async function _buildResponsePembelianNPL(models, dataPembelianNPL) {
-	const dataNPL = await models.NPL.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	});
-
-	let dataKumpul = []
-	return dataPembelianNPL.map(val => {
-		dataKumpul = dataNPL
-		.filter(npl => npl.idPembelianNPL === val.idPembelianNPL)
-		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				statusNpl: val2.statusNpl == 0 ? "Belum Digunakan" : val2.statusNPL == 1 ? "Sudah Digunakan" : "Refund NPL",
-			});
-			return objectBaru
-		})
-
-		return {
-			idPembelianNPL: val.idPembelianNPL,
-			idPeserta: val.idPeserta,
-			idEvent: val.idEvent,
-			typePembelian: val.typePembelian == 1 ? "Online" : "Offline",
-			typeTransaksi: val.typeTransaksi == 1 ? "Tunai" : "Transfer/EDC",
-			noPembelian: val.noPembelian,
-			verifikasi: val.verifikasi == 1 ? 'Sudah Di Verifikasi' : 'Belum Di Verifikasi',
-			nominal: val.nominal,
-			tanggalTransfer: dateconvert(val.tanggalTransfer),
-			pesanVerifikasi: val.pesanVerifikasi,
-			bukti: BASE_URL+'image/berkas/'+val.bukti,
-			statusAktif: val.statusAktif,
-			kodeEvent: val.Event.kodeEvent,
-			passEvent: val.Event.passEvent,
-			kataSandiEvent: val.Event.kataSandiEvent,
-			namaEvent: val.Event.namaEvent,
-			deskripsiEvent: val.Event.deskripsiEvent,
-			waktuEvent: dateconvert(val.Event.tanggalEvent) + ' ' + val.Event.waktuEvent,
-			kelipatan_bid: val.Event.kelipatan_bid,
-			gambar: BASE_URL+'image/event/'+val.Event.gambar,
-			alamatEvent: val.Event.alamatEvent,
-			linkMaps: val.Event.linkMaps,
-			nama: val.User.nama,
-			email: val.User.email,
-			no_hp: val.User.no_hp,
-			alamat: val.User.alamat,
-			dataNPL: dataKumpul
-		}
-	})
-}
-
-async function _buildResponsePromosi(dataPromosi) {
-	return dataPromosi.map(val => {
-		return {
-			idPromosi: val.idPromosi,
-			idProduk: val.idProduk,
-			namaPromo: val.namaPromo,
-			deskripsi: val.deskripsi,
-			UnixText: val.UnixText,
-			gambar: val.gambar,
-			statusAktif: val.statusAktif,
-		}
-	})
 }
 
 module.exports = {
@@ -1113,11 +659,4 @@ module.exports = {
   _buildResponseMall,
   _buildResponseTenantMall,
   _buildResponseContent,
-  _buildResponseLelang,
-  _buildResponseDetailLelang,
-  _buildResponseDetailProduk,
-  _buildResponseLotLelang,
-  _buildResponseDetailLot,
-  _buildResponsePembelianNPL,
-  _buildResponsePromosi,
 }
