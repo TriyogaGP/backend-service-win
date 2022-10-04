@@ -112,16 +112,18 @@ async function _buildResponseBarangLelang(models, dataBarangLelang) {
 		dataKumpul = dataFotoBarangLelang
 		.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
 		.map(val2 => {
-			let objectBaru = Object.assign(val2, {
-				gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
-			});
-			return objectBaru
+			// let objectBaru = Object.assign(val2, {
+			// 	gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
+			// });
+			// return objectBaru
+			return val2
 		})
 
 		return {
 			idBarangLelang: val.idBarangLelang,
 			idKategori: val.idKategori,
 			namaKategori: val.KategoriLelang.kategori,
+			statusKategoriLelang: val.KategoriLelang.statusAktif,
 			namaBarangLelang: val.namaBarangLelang,
 			brand: val.brand,
 			warna: val.warna,
@@ -144,11 +146,11 @@ async function _buildResponseBarangLelang(models, dataBarangLelang) {
 			kapasitasKendaraan: val.kapasitasKendaraan,
 			deskripsi: val.deskripsi,
 			UnixText: val.UnixText,
-			stnk: BASE_URL+'image/kelengkapan-barang-lelang/'+val.stnk,
-			bpkb: BASE_URL+'image/kelengkapan-barang-lelang/'+val.bpkb,
-			faktur: BASE_URL+'image/kelengkapan-barang-lelang/'+val.faktur,
-			ktpPemilik: BASE_URL+'image/kelengkapan-barang-lelang/'+val.ktpPemilik,
-			kwitansi: BASE_URL+'image/kelengkapan-barang-lelang/'+val.kwitansi,
+			stnk: val.stnk,
+			bpkb: val.bpkb,
+			faktur: val.faktur,
+			ktpPemilik: val.ktpPemilik,
+			kwitansi: val.kwitansi,
 			statusAktif: val.statusAktif,
 			dataFotoBarangLelang: dataKumpul,
 		}

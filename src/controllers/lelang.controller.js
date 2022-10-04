@@ -17,11 +17,12 @@ function getKategoriLelang (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataKategori = await models.KategoriLelang.findAll({
 				where,
@@ -93,11 +94,11 @@ function getBarangLelang (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataBarangLelang = await models.BarangLelang.findAll({
 				where,
@@ -105,7 +106,7 @@ function getBarangLelang (models) {
 				include: [
 					{
 						model: models.KategoriLelang,
-						attributes: ['kategori']
+						attributes: ['kategori', 'statusAktif']
 					}
 				],
 				order
@@ -131,15 +132,15 @@ function getFotoBarangLelang (models) {
 				]
 			});
 
-			let dataKumpul = []
-			await dataFotoBarangLelang.map(val => {
-				let objectBaru = Object.assign(val.dataValues, {
-					gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val.dataValues.gambar
-				});
-				return dataKumpul.push(objectBaru)
-			})
+			// let dataKumpul = []
+			// await dataFotoBarangLelang.map(val => {
+			// 	let objectBaru = Object.assign(val.dataValues, {
+			// 		gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val.dataValues.gambar
+			// 	});
+			// 	return dataKumpul.push(objectBaru)
+			// })
 
-			return OK(res, dataKumpul);
+			return OK(res, dataFotoBarangLelang);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }

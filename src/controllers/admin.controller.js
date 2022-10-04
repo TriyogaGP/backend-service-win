@@ -169,9 +169,9 @@ function getPeserta (models) {
 				});
 	
 				let dataKumpul = Object.assign(val.dataValues, {
-					fotoPeserta: BASE_URL+'image/berkas/'+val.dataValues.fotoPeserta,
-					fotoKTP: BASE_URL+'image/berkas/'+val.dataValues.fotoKTP,
-					fotoNPWP: BASE_URL+'image/berkas/'+val.dataValues.fotoNPWP,
+					// fotoPeserta: BASE_URL+'image/berkas/'+val.dataValues.fotoPeserta,
+					// fotoKTP: BASE_URL+'image/berkas/'+val.dataValues.fotoKTP,
+					// fotoNPWP: BASE_URL+'image/berkas/'+val.dataValues.fotoNPWP,
 					dataAddress,
 				})
 				return dataKumpul;
