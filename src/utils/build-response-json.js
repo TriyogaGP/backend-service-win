@@ -6,12 +6,13 @@ const BASE_URL = process.env.BASE_URL
 function _buildResponsePeserta(dataPeserta, refreshToken, accessToken) {
 	let dataKumpul = Object.assign(dataPeserta, {
 		fotoPeserta: BASE_URL+'image/berkas/'+dataPeserta.fotoPeserta,
-		fotoKTP: BASE_URL+'image/berkas/'+dataPeserta.fotoKTP,
-		fotoNPWP: BASE_URL+'image/berkas/'+dataPeserta.fotoNPWP,
+		// fotoKTP: BASE_URL+'image/berkas/'+dataPeserta.fotoKTP,
+		// fotoNPWP: BASE_URL+'image/berkas/'+dataPeserta.fotoNPWP,
 	})
 
 	return {
-		...dataKumpul.dataValues,
+		// ...dataKumpul.dataValues,
+		idPeserta: dataPeserta.idPeserta,
 		refreshToken,
 		accessToken
 	}
