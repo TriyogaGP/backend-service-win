@@ -11,6 +11,7 @@ const {
   getWilayah,
   getLoggerAdmin,
   getLoggerPeserta,
+  getMeasurement,
 } = require('../controllers/settings.controler')
 const { uploadFile } = require('../middleware/uploadFile')
 
@@ -27,6 +28,7 @@ module.exports = models => {
   route.route('/getWilayah').get(getWilayah(models))
   route.route('/getLoggerAdmin').get(getLoggerAdmin(models))
   route.route('/getLoggerPeserta').get(getLoggerPeserta(models))
+  route.route('/getMeasurement').get(getMeasurement(models))
   
   return route;
 }

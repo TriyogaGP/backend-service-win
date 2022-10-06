@@ -214,6 +214,7 @@ async function _buildResponseProduk(models, dataProduk) {
 			idProduk: val.idProduk,
 			idKategoriProduk: val.idKategoriProduk,
 			kategoriProduk: val.KategoriProduk.kategoriProduk,
+			statuskategoriProduk: val.KategoriProduk.statusAktif,
 			idMeasurement: val.idMeasurement,
 			name: val.Measurement.name,
 			displayName: val.Measurement.displayName,
@@ -291,7 +292,10 @@ async function _buildResponseNPL(models, kategori = null, id_event, dataPembelia
 			dataKumpulNPL = dataNPL
 			.filter(npl => npl.idPembelianNPL === val.idPembelianNPL)
 			.map(val2 => {
-				return val2
+				let objectBaru = Object.assign(val2.dataValues, {
+					RefundNPL: val2.dataValues.RefundNPL != null ? val2.dataValues.RefundNPL : {}
+				});
+				return objectBaru
 			})
 
 			return {
@@ -311,6 +315,7 @@ async function _buildResponseNPL(models, kategori = null, id_event, dataPembelia
 				nama: val.User.nama,
 				email: val.User.email,
 				noHP: val.User.noHP,
+				UnixText: val.User.UnixText,
 				statusPeserta: val.User.statusAktif,
 				kodeEvent: val.Event.kodeEvent,
 				namaEvent: val.Event.namaEvent,
@@ -378,8 +383,8 @@ async function _buildResponsePemenang(models, dataPemenang) {
 			return val2
 		})
 
-		let dataBarLel = Object.assign(val.Bidding.LOT.PembelianNPL, {
-			stnk: val.Bidding.LOT.BarangLelang.stnk,
+		let dataBarLel = Object.assign(val.Bidding.LOT.BarangLelang, {
+			stnk: "haha/"+val.Bidding.LOT.BarangLelang.stnk,
 			bpkb: val.Bidding.LOT.BarangLelang.bpkb,
 			faktur: val.Bidding.LOT.BarangLelang.faktur,
 			ktpPemilik: val.Bidding.LOT.BarangLelang.ktpPemilik,
@@ -457,32 +462,42 @@ async function _buildResponseOrder(models, dataOrder) {
 	});
 	
 	const dataOrderPayment = await models.OrderPayment.findAll({
-		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'updatedAt', 'deletedAt'] },
 	});
 
 	const dataOrderMoves = await models.OrderMoves.findAll();
 
 	let kumpulProduk = [], kumpulOrderPayment = [], kumpulOrderMoves = []
 	return dataOrder.map(val => {
-		let qty = 0, berat = 0
+		let qty = 0, berat = 0, pointBelanja = 0, spec = ''
 		dataDetailOrder
 		.filter(order => order.idOrder === val.idOrder)
 		.map(val2 => {
 			qty += val2.jumlahProduk
+			pointBelanja += val2.Produk.point
 			let splitBerat = val2.Produk.berat.split(' ')
+			spec = splitBerat[1]
 			berat += parseInt(splitBerat[0])
 		})
+		let hasilBerat = berat * qty
 
 		kumpulProduk = dataDetailOrder
 		.filter(order => order.idOrder === val.idOrder)
 		.map(val2 => {
-			return val2.Produk
+			let objectBaru = Object.assign(val2.Produk.dataValues, {
+				jumlahProduk: val2.dataValues.jumlahProduk ? val2.dataValues.jumlahProduk : 0,
+				subTotal: val2.dataValues.subTotal ? val2.dataValues.subTotal : 0
+			});
+			return objectBaru
 		})
 
 		kumpulOrderPayment = dataOrderPayment
 		.filter(order => order.idOrder === val.idOrder)
 		.map(val2 => {
-			return val2
+			let objectBaru = Object.assign(val2.dataValues, {
+				createdAt: convertDateTime(val2.dataValues.createdAt)
+			});
+			return objectBaru
 		})
 
 		kumpulOrderMoves = dataOrderMoves
@@ -504,9 +519,13 @@ async function _buildResponseOrder(models, dataOrder) {
 			adminFee: val.adminFee,
 			total: val.total,
 			statusLatest: val.statusLatest,
-			qty,
-			berat: berat+' gr',
+			qtyTotal: qty,
+			berat: hasilBerat+' '+spec,
 			items: kumpulProduk.length,
+			pointBelanja,
+			paymentMethod: kumpulOrderPayment[0].paymentMethod,
+			paymentProvider: kumpulOrderPayment[0].paymentProvider,
+			orderCreate: convertDateTime(val.createdAt),
 			dataBuyer: {
 				nama: val.User.nama,
 				email: val.User.email,
@@ -621,6 +640,9 @@ function _buildResponseContent(kategori, dataContent) {
 				foto: val.foto,
 				kategoriContent: val.KategoriContent.kategoriContent,
 				namaMall: val.Mall.namaMall,
+				UnixText: val.Mall.UnixText,
+				idAdmin: val.Mall.idAdmin,
+				nama: val.Mall.Admin.nama,
 				statusAktif: val.statusAktif,
 			}
 		})
@@ -636,6 +658,9 @@ function _buildResponseContent(kategori, dataContent) {
 				foto: val.foto,
 				kategoriContent: val.KategoriContent.kategoriContent,
 				namaTenantMall: val.TenantMall.namaTenantMall,
+				UnixText: val.Mall.UnixText,
+				idAdmin: val.TenantMall.idAdmin,
+				nama: val.TenantMall.Admin.nama,
 				statusAktif: val.statusAktif,
 			}
 		})

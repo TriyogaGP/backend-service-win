@@ -296,6 +296,22 @@ function getLoggerPeserta (models) {
   }  
 }
 
+function getMeasurement (models) {
+  return async (req, res, next) => {
+		let { status_aktif } = req.query
+		let where = {}
+    try {
+			if(status_aktif) {
+				where.statusAktif = status_aktif
+			}
+      const dataMeasurement = await models.Measurement.findAll({where});
+			return OK(res, dataMeasurement);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
   updateFile,
   getEncrypt,
@@ -308,4 +324,5 @@ module.exports = {
   getWilayah,
   getLoggerAdmin,
   getLoggerPeserta,
+  getMeasurement,
 }

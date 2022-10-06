@@ -17,11 +17,11 @@ function getKategoriTenant (models) {
 		let where = {}
 		let order = []
     try {
+		order = [
+			['createdAt', sort ? sort : 'ASC'],
+		]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataKategori = await models.KategoriTenant.findAll({
 				where,
@@ -93,11 +93,11 @@ function getKategoriContent (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataKategori = await models.KategoriContent.findAll({
 				where,
@@ -170,18 +170,15 @@ function getMall (models) {
 		let order = []
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
 			if(id_admin) { 
 				where.idAdmin = id_admin 
-				where.statusAktif = 1 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
+				where.statusAktif = true 
 			}
       const dataMall = await models.Mall.findAll({
 				where,
@@ -438,15 +435,15 @@ function getFotoTenantMall (models) {
 				]
 			});
 
-			let dataKumpul = []
-			await dataFotoTenantMall.map(val => {
-				let objectBaru = Object.assign(val.dataValues, {
-					gambar: BASE_URL+'image/mall/'+val.dataValues.gambar
-				});
-				return dataKumpul.push(objectBaru)
-			})
+			// let dataKumpul = []
+			// await dataFotoTenantMall.map(val => {
+			// 	let objectBaru = Object.assign(val.dataValues, {
+			// 		gambar: BASE_URL+'image/mall/'+val.dataValues.gambar
+			// 	});
+			// 	return dataKumpul.push(objectBaru)
+			// })
 
-			return OK(res, dataKumpul);
+			return OK(res, dataFotoTenantMall);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -525,38 +522,37 @@ function crudTenantMall (models) {
 
 function getContent (models) {
   return async (req, res, next) => {
-		let { kategori, id_tenant_mall, id_mall, status_aktif, sort } = req.query
+		let { kategori, id_kategori_content, id_tenant_mall, id_mall, status_aktif, sort } = req.query
 		let where = {}
 		let order = []
 		let table = ''
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(kategori == 'mall'){
 				table = models.ContentMall
 				if(id_mall) { 
 					where.idMall = id_mall 
-					where.statusAktif = 1 
-					order = [
-						['createdAt', sort ? sort : 'ASC'],
-					]
+					where.statusAktif = true 
 				}
 			}else if(kategori == 'tenantmall'){
 				table = models.ContentTenantMall
 				if(id_tenant_mall) { 
 					where.idTenantMall = id_tenant_mall 
-					where.statusAktif = 1 
-					order = [
-						['createdAt', sort ? sort : 'ASC'],
-					]
+					where.statusAktif = true
 				}
 			}
 
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
+
+			if(id_kategori_content){
+				where.idKategoriContent = id_kategori_content 
+			}
+
       const dataContent = await table.findAll({
 				where,
 				attributes,
@@ -569,11 +565,23 @@ function getContent (models) {
 						{
 							model: models.Mall,
 							attributes,
+							include: [
+								{
+									model: models.Admin,
+									attributes,
+								},
+							]
 						}
 					:
 						{
 							model: models.TenantMall,
 							attributes,
+							include: [
+								{
+									model: models.Admin,
+									attributes,
+								},
+							]
 						}
 				],
 				order

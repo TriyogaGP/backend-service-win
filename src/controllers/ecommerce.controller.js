@@ -17,11 +17,11 @@ function getKategoriProduk (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataKategori = await models.KategoriProduk.findAll({
 				where,
@@ -93,11 +93,11 @@ function getProduk (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataProduk = await models.Produk.findAll({
 				where,
@@ -105,7 +105,7 @@ function getProduk (models) {
 				include: [
 					{
 						model: models.KategoriProduk,
-						attributes: ['kategoriProduk']
+						attributes: ['kategoriProduk', 'statusAktif']
 					},
 					{
 						model: models.Measurement,
@@ -135,15 +135,15 @@ function getFotoProduk (models) {
 				]
 			});
 
-			let dataKumpul = []
-			await dataFotoProduk.map(val => {
-				let objectBaru = Object.assign(val.dataValues, {
-					gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val.dataValues.gambar
-				});
-				return dataKumpul.push(objectBaru)
-			})
+			// let dataKumpul = []
+			// await dataFotoProduk.map(val => {
+			// 	let objectBaru = Object.assign(val.dataValues, {
+			// 		gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val.dataValues.gambar
+			// 	});
+			// 	return dataKumpul.push(objectBaru)
+			// })
 
-			return OK(res, dataKumpul);
+			return OK(res, dataFotoProduk);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -173,13 +173,11 @@ function getHistoryStock (models) {
 				let objectBaru = Object.assign(val.dataValues, {
 					tanggal: convertDate(val.dataValues.tanggal),
 					tanggalstok: dateconvert(val.dataValues.tanggal),
-					stokMasuk,
-					stokKeluar
 				});
 				return dataKumpul.push(objectBaru)
 			})
 
-			return OK(res, dataKumpul);
+			return OK(res, {dataStok: dataKumpul, stokMasuk, stokKeluar});
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -205,6 +203,7 @@ function crudProduk (models) {
 				kirimdata = {
 					UnixText: body.UnixText,
 					idKategoriProduk: body.id_kategori_produk,
+					idMeasurement: body.id_measurement,
 					kodeProduk: body.kode_produk,
 					namaProduk: body.nama_produk,
 					merekProduk: body.merek_produk,
@@ -237,6 +236,7 @@ function crudProduk (models) {
 				kirimdata = {
 					UnixText: body.UnixText,
 					idKategoriProduk: body.id_kategori_produk,
+					idMeasurement: body.id_measurement,
 					kodeProduk: body.kode_produk,
 					namaProduk: body.nama_produk,
 					merekProduk: body.merek_produk,
@@ -341,7 +341,7 @@ function getPromosi (models) {
 			let dataKumpul = []
 			await dataPromosi.map(val => {
 				let objectBaru = Object.assign(val.dataValues, {
-					gambar: BASE_URL+'image/promo/'+val.dataValues.gambar,
+					// gambar: BASE_URL+'image/promo/'+val.dataValues.gambar,
 					idProduk: val.dataValues.idProduk ? JSON.parse([val.dataValues.idProduk]) : []
 				});
 				return dataKumpul.push(objectBaru)
@@ -428,7 +428,7 @@ function getOrder (models) {
 							[ "TRANSAKSI BATAL" ]
 					}
 				},
-				attributes,
+				attributes: { exclude: ['updateBy', 'deleteBy', 'updatedAt', 'deletedAt'] },
 				include: [
 					{
 						model: models.User,

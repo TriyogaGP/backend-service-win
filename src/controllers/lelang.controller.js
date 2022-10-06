@@ -489,68 +489,6 @@ function crudLot (models) {
   }  
 }
 
-function getPemenang (models) {
-	return async (req, res, next) => {
-		let { status_aktif, sort } = req.query
-		let where = {}
-		let order = []
-		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
-	  try {
-			if(status_aktif) { 
-				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
-			}
-			const dataPemenang = await models.PemenangLelang.findAll({
-				where,
-				attributes,
-				include: [
-					{ 
-						model: models.Bidding,
-						attributes,
-						include: [
-							{ 
-								model: models.LOT,
-								attributes,
-								include: [
-									{ 
-										model: models.BarangLelang,
-										attributes,
-									},
-									{ 
-										model: models.Event,
-										attributes,
-									},
-								],
-							},
-							{ 
-								model: models.NPL,
-								attributes,
-								include: [
-									{ 
-										model: models.PembelianNPL,
-										attributes,
-									},
-									{ 
-										model: models.User,
-										attributes,
-									},
-								],
-							},
-						],
-					},
-				],
-				order
-			});
-
-			return OK(res, await _buildResponsePemenang(models, dataPemenang));
-	  } catch (err) {
-			return NOT_FOUND(res, err.message)
-	  }
-	}  
-}
-
 function getNPL (models) {
   return async (req, res, next) => {
 		let { kategori, id_event, id_peserta, status_aktif, sort } = req.query
@@ -701,6 +639,108 @@ function crudNPL (models) {
   }  
 }
 
+function getPemenang (models) {
+	return async (req, res, next) => {
+		let { status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+	  try {
+		  order = [
+			  ['createdAt', sort ? sort : 'ASC'],
+		  ]
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+			const dataPemenang = await models.PemenangLelang.findAll({
+				where,
+				attributes,
+				include: [
+					{ 
+						model: models.Bidding,
+						attributes,
+						include: [
+							{ 
+								model: models.LOT,
+								attributes,
+								include: [
+									{ 
+										model: models.BarangLelang,
+										attributes,
+									},
+									{ 
+										model: models.Event,
+										attributes,
+									},
+								],
+							},
+							{ 
+								model: models.NPL,
+								attributes,
+								include: [
+									{ 
+										model: models.PembelianNPL,
+										attributes,
+									},
+									{ 
+										model: models.User,
+										attributes,
+									},
+								],
+							},
+						],
+					},
+				],
+				order
+			});
+
+			return OK(res, await _buildResponsePemenang(models, dataPemenang));
+	  } catch (err) {
+			return NOT_FOUND(res, err.message)
+	  }
+	}  
+}
+
+function crudPemenang (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+    try {
+			let kirimdata;
+			if(body.jenis == 'EDIT'){
+				kirimdata = {
+					noRek: body.no_rek,
+					namaPemilik: body.nama_pemilik,
+					tanggalTransfer: body.tanggal_transfer,
+					tipePelunasan: body.tipe_pelunasan,
+					statusPembayaran: body.status_pembayaran,
+					statusAktif: 1,
+					updateBy: body.create_update_by,
+				}
+				await models.PemenangLelang.update(kirimdata, { where: { idPemenangLelang: body.id_pemenang_lelang } })
+			}else if(body.jenis == 'DELETE'){
+				kirimdata = {
+					statusAktif: 0,
+					deleteBy: body.delete_by,
+					deletedAt: new Date(),
+				}
+				await models.PemenangLelang.update(kirimdata, { where: { idPemenangLelang: body.id_pemenang_lelang } })
+			}else if(body.jenis == 'STATUSRECORD'){
+				kirimdata = {
+					statusAktif: body.status_aktif,
+					updateBy: body.create_update_by
+				}
+				await models.PemenangLelang.update(kirimdata, { where: { idPemenangLelang: body.id_pemenang_lelang } })
+			}else{
+				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
+			}
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
   getKategoriLelang,
   crudKategoriLelang,
@@ -711,8 +751,9 @@ module.exports = {
   crudEvent,
   getLot,
   crudLot,
-  getPemenang,
   getNPL,
   crudPembelianNPL,
   crudNPL,
+  getPemenang,
+  crudPemenang,
 }

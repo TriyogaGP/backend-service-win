@@ -9,10 +9,11 @@ const {
   crudEvent,
   getLot,
   crudLot,
-  getPemenang,
   getNPL,
   crudPembelianNPL,
   crudNPL,
+  getPemenang,
+  crudPemenang,
 } = require('../controllers/lelang.controller')
 
 module.exports = models => {
@@ -31,6 +32,7 @@ module.exports = models => {
   route.route('/postPembelianNPL').post(crudPembelianNPL(models))
   route.route('/postNPL').post(crudNPL(models))
   route.route('/getPemenang').get(getPemenang(models))
+  route.route('/postPemenang').post(crudPemenang(models))
   
   return route;
 }
