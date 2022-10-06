@@ -215,6 +215,10 @@ function getLotLelang (models) {
 				where.statusAktif = true
 				where.idEvent = id_event 
 			}
+			if(id_kategori) {
+				where.statusAktif = true
+				where.statusLot = [2,3,4]
+			}
 
       const dataLOT = await models.LOT.findAll({
 				where,
