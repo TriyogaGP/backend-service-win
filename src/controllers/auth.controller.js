@@ -163,12 +163,12 @@ function getProfile (models) {
 					attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 				});
 
-				let dataKumpul = Object.assign(dataProfile, {
-					fotoPeserta: BASE_URL+'image/berkas/'+dataProfile.fotoPeserta,
-					fotoKTP: BASE_URL+'image/berkas/'+dataProfile.fotoKTP,
-					fotoNPWP: BASE_URL+'image/berkas/'+dataProfile.fotoNPWP,
-				})
-				return OK(res, { ...dataKumpul.dataValues, dataAddress});
+				// let dataKumpul = Object.assign(dataProfile, {
+				// 	fotoPeserta: BASE_URL+'image/berkas/'+dataProfile.fotoPeserta,
+				// 	fotoKTP: BASE_URL+'image/berkas/'+dataProfile.fotoKTP,
+				// 	fotoNPWP: BASE_URL+'image/berkas/'+dataProfile.fotoNPWP,
+				// })
+				return OK(res, { ...dataProfile.dataValues, dataAddress});
 			}
 			OK(res, null, 'param tidak lengkap !');
     } catch (err) {
@@ -227,10 +227,53 @@ function getDashboard (models) {
   }  
 }
 
+function ubahKataSandi (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+    try {
+			let kirimdata, salt, hashPassword;
+			if(body.jenis == 'Admin'){
+				let admin = await models.Admin.findOne({where: {idAdmin: body.id_login}})
+				if(body.passwordLama != decrypt(admin.kataSandi)) return NOT_FOUND(res, 'Kata Sandi Lama tidak cocok !')
+				if(body.passwordBaru != body.passwordConfBaru) return NOT_FOUND(res, 'Kata Sandi Baru tidak cocok dengan Konfirmasi Kata Sandi Baru !')
+				salt = await bcrypt.genSalt();
+				hashPassword = await bcrypt.hash(body.passwordBaru, salt);
+				kirimdata = {
+					password: hashPassword,
+					kataSandi: encrypt(body.passwordBaru),
+					updateBy: body.create_update_by,
+				}
+				await models.Admin.update(kirimdata, { where: { idAdmin: body.id_login } })
+				return OK(res, admin);
+			}else if(body.jenis == 'Peserta'){
+				let admin = await models.User.findOne({where: {idPeserta: body.id_login}})
+				if(body.passwordLama != decrypt(admin.kataSandi)) return NOT_FOUND(res, 'Kata Sandi Lama tidak cocok !')
+				if(body.passwordBaru != body.passwordConfBaru) return NOT_FOUND(res, 'Kata Sandi Baru tidak cocok dengan Konfirmasi Kata Sandi Baru !')
+				salt = await bcrypt.genSalt();
+				hashPassword = await bcrypt.hash(body.passwordBaru, salt);
+				kirimdata = {
+					password: hashPassword,
+					kataSandi: encrypt(body.passwordBaru),
+					updateBy: body.create_update_by,
+				}
+				await models.User.update(kirimdata, { where: { idPeserta: body.id_login } })
+				return OK(res, admin);
+			}else{
+				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
+			}
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
   loginAdmin,
   loginPeserta,
   getProfile,
   getAddress,
   getDashboard,
+  ubahKataSandi,
 }

@@ -50,7 +50,7 @@ const RoomJoinScheme = Sequelize => {
     device: {
       type: DataTypes.STRING(50),
       allowNull: true,
-      field: 'pesan',
+      field: 'device',
     },
     joinAt: {
       type: DataTypes.DATE,

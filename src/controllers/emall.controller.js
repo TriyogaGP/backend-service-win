@@ -307,6 +307,7 @@ function getFasilitasMall (models) {
 				let objectBaru = {
 					idFasilitasMall: val.idFasilitasMall,
 					idMall: val.idMall,
+					idAdmin: val.Mall.idAdmin,
 					namaMall: val.Mall.namaMall,
 					fasilitasMall: val.fasilitasMall,
 					statusAktif: val.statusAktif,

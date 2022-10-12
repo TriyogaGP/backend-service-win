@@ -5,6 +5,7 @@ const {
   getProfile,
   getAddress,
   getDashboard,
+  ubahKataSandi,
 } = require('../controllers/auth.controller')
 
 module.exports = models => {
@@ -15,6 +16,7 @@ module.exports = models => {
   route.route('/getProfile').get(getProfile(models))
   route.route('/getAddress/:idLogin').get(getAddress(models))
   route.route('/getDashboard').get(getDashboard(models))
+  route.route('/ubahKataSandi').post(ubahKataSandi(models))
   
   return route;
 }

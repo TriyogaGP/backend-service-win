@@ -1,4 +1,4 @@
-const { convertDateTime, dateconvert, convertDate } = require('./helper.utils');
+const { decrypt, convertDateTime, dateconvert, convertDate } = require('./helper.utils');
 
 function _buildResponseMenu(dataMenu) {
 	return dataMenu.map(val => {
@@ -620,6 +620,7 @@ function _buildResponseTenantMall(dataTenantMall) {
 			nama: val.Admin.nama,
 			email: val.Admin.email,
 			noHP: val.Admin.noHP,
+			idAdmin: val.Mall.idAdmin,
 			namaMall: val.Mall.namaMall,
 			logoMall: val.Mall.logo,
 			statusAktif: val.statusAktif,
@@ -658,13 +659,117 @@ function _buildResponseContent(kategori, dataContent) {
 				foto: val.foto,
 				kategoriContent: val.KategoriContent.kategoriContent,
 				namaTenantMall: val.TenantMall.namaTenantMall,
-				UnixText: val.Mall.UnixText,
+				UnixText: val.TenantMall.UnixText,
 				idAdmin: val.TenantMall.idAdmin,
 				nama: val.TenantMall.Admin.nama,
 				statusAktif: val.statusAktif,
 			}
 		})
 	}
+}
+
+async function _buildResponseRoom(models, dataLot) {
+	const dataFotoBarangLelang = await models.FotoBarangLelang.findAll({
+		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+	});
+
+	let dataKumpulFoto = []
+	dataKumpulFoto = dataFotoBarangLelang
+	.filter(barleng => barleng.idBarangLelang === dataLot.idBarangLelang)
+	.map(val2 => {
+		return val2
+	})
+
+	let dataBarLel = {
+		...dataLot.BarangLelang.dataValues, 
+		KategoriLelang: {
+			namaKategori: dataLot.BarangLelang.dataValues.KategoriLelang.kategori, 
+			statusKategoriLelang: dataLot.BarangLelang.dataValues.KategoriLelang.statusAktif 
+		}
+	};
+
+	let dataEvent = {
+		...dataLot.Event.dataValues, 
+		startEvent: dateconvert(dataLot.Event.dataValues.tanggalEvent)+' '+dataLot.Event.dataValues.waktuEvent
+	};
+
+	return {
+		idLot: dataLot.idLot,
+		noLot: dataLot.noLot,
+		hargaAwal: dataLot.hargaAwal,
+		statusLot: dataLot.statusLot,
+		statusAktif: dataLot.statusAktif,
+		Event: dataEvent,
+		BarangLelang: dataBarLel,
+		dataFotoBarangLelang: dataKumpulFoto,
+	}
+}
+
+async function _buildResponseBidLelang(models, dataPembelianNPL) {
+	const dataNPL = await models.NPL.findAll({
+		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+		include: [
+			{
+				model: models.RefundNPL,
+				attributes: { exclude: ['createBy', 'updateBy', 'createdAt', 'updatedAt'] },
+			}
+		]
+	});
+
+	const dataLot = await models.LOT.findAll({
+		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+	});
+	
+	let dataKumpulNPL = [], dataKumpulLot = []
+	return dataPembelianNPL.map(val => {
+		dataKumpulNPL = dataNPL
+		.filter(npl => npl.idPembelianNPL === val.idPembelianNPL)
+		.map(val2 => {
+			let objectBaru = Object.assign(val2.dataValues, {
+				RefundNPL: val2.dataValues.RefundNPL != null ? val2.dataValues.RefundNPL : {}
+			});
+			return objectBaru
+		})
+
+		dataKumpulLot = dataLot
+		.filter(lot => lot.idEvent === val.idEvent && lot.statusLot === 2)
+		.map(val2 => {
+			return val2
+		})
+
+		return {
+			idPembelianNPL: val.idPembelianNPL,
+			idPeserta: val.idPeserta,
+			idEvent: val.idEvent,
+			typePembelian: val.typePembelian,
+			typeTransaksi: val.typeTransaksi,
+			noPembelian: val.noPembelian,
+			verifikasi: val.verifikasi,
+			nominal: val.nominal,
+			tanggalTransfer: convertDateTime(val.tanggalTransfer),
+			pesanVerifikasi: val.pesanVerifikasi,
+			bukti: val.bukti,
+			statusAktif: val.statusAktif,
+			nik: val.User.nik,
+			nama: val.User.nama,
+			email: val.User.email,
+			noHP: val.User.noHP,
+			UnixText: val.User.UnixText,
+			statusPeserta: val.User.statusAktif,
+			Event: {
+				idEvent: val.Event.idEvent,
+				kodeEvent: val.Event.kodeEvent,
+				namaEvent: val.Event.namaEvent,
+				tanggalEvent: dateconvert(val.Event.tanggalEvent)+' '+val.Event.waktuEvent,
+				kodeevent_split: val.Event.kodeEvent.split('-')[2],
+				kataSandiEvent: decrypt(val.Event.kataSandiEvent),
+				gambar: val.Event.gambar,
+				statusEvent: val.Event.statusAktif,
+				LOT: dataKumpulLot,
+			},
+			NPL: dataKumpulNPL,
+		}
+	})
 }
 
 module.exports = {
@@ -684,4 +789,6 @@ module.exports = {
   _buildResponseMall,
   _buildResponseTenantMall,
   _buildResponseContent,
+  _buildResponseRoom,
+  _buildResponseBidLelang,
 }

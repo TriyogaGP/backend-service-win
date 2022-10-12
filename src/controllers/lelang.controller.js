@@ -1,5 +1,5 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../utils/response.utils');
-const { _buildResponseBarangLelang, _buildResponseLot, _buildResponseNPL, _buildResponsePemenang } = require('../utils/build-response');
+const { _buildResponseBarangLelang, _buildResponseLot, _buildResponseNPL, _buildResponsePemenang, _buildResponseRoom, _buildResponseBidLelang } = require('../utils/build-response');
 const { encrypt, decrypt ,convertDate, dateconvert } = require('../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
@@ -265,11 +265,11 @@ function getEvent (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataEvent = await models.Event.findAll({
 				where,
@@ -741,6 +741,136 @@ function crudPemenang (models) {
   }  
 }
 
+function getEventActive (models) {
+  return async (req, res, next) => {
+		let { status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+	  try {
+		  order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+      const dataEvent = await models.Event.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				order
+			});
+
+			let dataKumpul = await Promise.all(dataEvent.map(async (val) => {
+				const dataLot = await models.LOT.findAll({
+					where: { idEvent: val.idEvent, statusLot: 2 },
+					attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				});
+				let tampungData = []
+				const splitkodeevent = val.dataValues.kodeEvent.split('-')
+				const parameters = {
+					tanggalEvent: convertDate(val.dataValues.tanggalEvent),
+					startEvent: dateconvert(val.dataValues.tanggalEvent)+' '+val.dataValues.waktuEvent,
+					kodeevent_split: splitkodeevent[2],
+					kataSandiEvent: decrypt(val.dataValues.kataSandiEvent)
+				}
+				let objectBaru = Object.assign(val.dataValues, parameters);
+				objectBaru = { ...objectBaru, LOT: dataLot.length ? dataLot : [] }
+				tampungData.push(objectBaru)
+				return tampungData[0]
+			}))
+
+			return OK(res, dataKumpul);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getRoomEvent (models) {
+  return async (req, res, next) => {
+		let { no_lot, status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+			if(no_lot) { 
+				where.noLot = no_lot 
+			}
+      const dataLot = await models.LOT.findOne({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{ 
+						model: models.BarangLelang,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+						include: [
+							{ 
+								model: models.KategoriLelang,
+								attributes: ['kategori', 'statusAktif'],
+							},
+						]
+					},
+					{ 
+						model: models.Event,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+					},
+				],
+				order
+			});
+
+			return OK(res, await _buildResponseRoom(models, dataLot));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getBidLelang (models) {
+  return async (req, res, next) => {
+		let { id_peserta, status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+    try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+			if(id_peserta) { 
+				where.idPeserta = id_peserta 
+				where.statusAktif = true 
+			}
+      const dataPembelianNPL = await models.PembelianNPL.findAll({
+				where,
+				attributes,
+				include: [
+					{ 
+						model: models.User,
+						attributes,
+					},
+					{ 
+						model: models.Event,
+						attributes,
+					},
+				],
+				order: [
+					['createdAt', sort ? sort : 'ASC'],
+				]
+			});
+
+			return OK(res, await _buildResponseBidLelang(models, dataPembelianNPL));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
   getKategoriLelang,
   crudKategoriLelang,
@@ -756,4 +886,7 @@ module.exports = {
   crudNPL,
   getPemenang,
   crudPemenang,
+  getEventActive,
+  getRoomEvent,
+  getBidLelang,
 }

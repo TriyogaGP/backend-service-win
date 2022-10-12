@@ -15,10 +15,17 @@ const models = importModels(sequelizeInstance, Sequelize);
 const { verifyToken } = require('./middleware/VerifyToken');
 const app = express();
 const path = require('path');
+const cron = require('node-cron');
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
 const dotenv = require('dotenv');
 dotenv.config();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server, { cors: { origin: "*" } });
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 try {
   sequelizeInstance.authenticate();
@@ -48,11 +55,123 @@ try {
   app.use('/api/v1/lelang', lelang(models));
   app.use('/api/v1/ecommerce', ecommerce(models));
   app.use('/api/v1/emall', emall(models));
+  
+  //Socket IO
+  const {
+    userJoin,
+    getCurrentUser,
+    getUsersData,
+    getMassageRoom,
+    userJoinBidding,
+    getCurrentUserBidding,
+    getUserBidding,
+    setUserBidding,
+    setUserPemenang,
+    messageRoom,
+    getUserData,
+    userLeave,
+  } = require("./utils/socketIO-utils");
+
+  io.on("connection", (socket) => {
+    console.log(`Socket.IO connected ${socket.id}`);
+    socket.on("join", async ({ room, id_peserta, id_event, is_admin, device }) => {
+      const joinUser = await userJoin(socket.id, room, id_peserta, id_event, is_admin, device);
+      const getUser = await getCurrentUser(joinUser);
+      socket.join(getUser.room);
+      // console.log(getUser)
+      io.to(getUser.room).emit('message', { pesan: `${getUser.isAdmin == 1 && 'Admin'} ${getUser.nama} masuk room dengan no ID ${getUser.idUser}`, id: getUser.idUser, data: getUser });
+      const getUserAll = await getUsersData(getUser.room);
+      io.to(getUser.room).emit("UserAll", getUserAll);
+      const getMessage = await getMassageRoom(getUser.room);
+      io.to(getUser.room).emit("MessageRoomAll", getMessage);
+    });
+
+    socket.on("join-bidding", async ({ room, id_peserta, id_event, id_npl, id_lot, is_admin, device }) => {
+      const joinUser = await userJoinBidding(socket.id, room, id_peserta, id_event, id_npl, id_lot, is_admin, device);
+      const getUser = await getCurrentUserBidding(joinUser);
+      socket.join(getUser.room);
+      if(is_admin){
+        io.to(getUser.room).emit('join-message', `Admin buat room dengan nama ${room}`);
+      }else{
+        io.to(getUser.room).emit('join-message', `${getUser.nama} masuk room dengan no ID ${getUser.idUser}`);
+      }
+      const getUserBid = await getUserBidding(getUser.idLot);
+      io.to(getUser.room).emit("bid", { dataBid: getUserBid });
+    });
+  
+    socket.on("bid", async ({ room, id_npl, id_lot, harga_bidding, is_admin }) => {
+      const bidding = await setUserBidding(id_npl, id_lot, harga_bidding, is_admin);
+      // io.to(room).emit("trigBid", bidding);
+      const getUserBid = await getUserBidding(bidding.idLot);
+      io.to(room).emit("bid", { dataBid: getUserBid });
+    });
+    
+    socket.on("send-pemenang", async ({ create_by, id_bidding, nominal, nama, no_npl }) => {
+      const pemenang = await setUserPemenang(create_by, id_bidding, nominal, nama, no_npl)
+      io.emit("send-pemenang", pemenang);
+    });
+  
+    socket.on("done-bidding", (message) => {
+      io.emit("done-bidding", message);
+    });
+    
+    socket.on("tombolJoin", (trig) => {
+      io.emit('tombolJoin', trig);
+    });
+  
+    socket.on("kirimMessage", async ({ room, id_peserta, id_event, is_admin, pesan }) => {
+      const message = await messageRoom(room, id_peserta, id_event, is_admin, pesan);
+      io.emit("kirimMessage", message);
+      const getMessage = await getMassageRoom(room);
+      io.to(room).emit("MessageRoomAll", getMessage);
+    });
+    
+    socket.on("typing", function (data) {
+      socket.broadcast.emit("typing", data);
+    });
+  
+    socket.on("disconnect", async () => {
+      const getUser = await getUserData(socket.id);
+      console.log('disconnect '+ socket.id)
+      // console.log(user);
+      if (getUser.status) {
+        const getUserAll = await getUsersData(getUser.room);
+        io.to(getUser.room).emit("UserAll", getUserAll);
+        await userLeave(socket.id);
+        io.to(getUser.room).emit('message', { pesan: `${getUser.nama} keluar dari room ${getUser.room}`, id: '', data: '' });
+        // socket.broadcast.to(getUser.room).emit("deviceStatus", false);
+      }
+    });
+  });
+
+  //cron job
+    // let now = dayjs();
+    // async function Cron() {
+    //   try {
+    //     const dataEvent = await models.Event.findAll({
+    //       where: { statusAktif: true },
+    //       attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+    //     });
+    //     const kumpulDateTime = []
+    //     dataEvent.map(val => {
+    //       let eventTime = dayjs([val.tanggalEvent, val.waktuEvent].join(" ")).add(1, 'day').toDate();
+    //       if(eventTime < now) {
+    //         kumpulDateTime.push(eventTime)
+    //       }
+    //     })
+    //   } catch (error) {
+    //     console.error(error);
+    //   }
+    // }
+    // let event = cron.schedule('* * * * *', async () => {
+    //   Cron();
+    // })
+    // event.start();
+
   const PORT = process.env.PORT || 3000;
   server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
   });
-
 } catch (error) {
   console.error('Unable to connect to the database:', error);
 }

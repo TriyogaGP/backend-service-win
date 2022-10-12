@@ -14,6 +14,9 @@ const {
   crudNPL,
   getPemenang,
   crudPemenang,
+  getEventActive,
+  getRoomEvent,
+  getBidLelang,
 } = require('../controllers/lelang.controller')
 
 module.exports = models => {
@@ -33,6 +36,9 @@ module.exports = models => {
   route.route('/postNPL').post(crudNPL(models))
   route.route('/getPemenang').get(getPemenang(models))
   route.route('/postPemenang').post(crudPemenang(models))
+  route.route('/getEventActive').get(getEventActive(models))
+  route.route('/getRoomEvent').get(getRoomEvent(models))
+  route.route('/getBidLelang').get(getBidLelang(models))
   
   return route;
 }
