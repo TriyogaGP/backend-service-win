@@ -21,6 +21,11 @@ const BarangLelangScheme = Sequelize => {
       allowNull: true,
       field: 'nama_barang_lelang',
     },
+    namaPemilik: {
+      type: DataTypes.STRING(256),
+      allowNull: true,
+      field: 'nama_pemilik',
+    },
     brand: {
       type: DataTypes.STRING(256),
       allowNull: true,

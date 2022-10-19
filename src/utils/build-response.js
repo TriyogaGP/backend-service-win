@@ -116,6 +116,7 @@ async function _buildResponseBarangLelang(models, dataBarangLelang) {
 			namaKategori: val.KategoriLelang.kategori,
 			statusKategoriLelang: val.KategoriLelang.statusAktif,
 			namaBarangLelang: val.namaBarangLelang,
+			namaPemilik: val.namaPemilik,
 			brand: val.brand,
 			warna: val.warna,
 			tahun: val.tahun,
