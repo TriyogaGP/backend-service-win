@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const {
   updateFile,
+  updateBerkas,
   getEncrypt,
   getDecrypt,
   getRole,
@@ -14,10 +15,12 @@ const {
   getMeasurement,
 } = require('../controllers/settings.controler')
 const { uploadFile } = require('../middleware/uploadFile')
+const { uploadBerkas } = require('../middleware/uploadBerkas')
 
 module.exports = models => {
   const route = Router();
   route.route('/updateFile').post(uploadFile, updateFile(models))
+  route.route('/updateBerkas').post(uploadBerkas, updateBerkas(models))
   route.route('/encryptPass').get(getEncrypt())
   route.route('/decryptPass').get(getDecrypt())
   route.route('/getRole').get(getRole(models))

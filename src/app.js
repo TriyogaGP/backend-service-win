@@ -67,9 +67,11 @@ try {
     getUserBidding,
     setUserBidding,
     setUserPemenang,
+    getUserPemenang,
     messageRoom,
     getUserData,
     userLeave,
+    getDataLot,
   } = require("./utils/socketIO-utils");
 
   io.on("connection", (socket) => {
@@ -95,6 +97,8 @@ try {
       }else{
         io.to(getUser.room).emit('join-message', `${getUser.nama} masuk room dengan no ID ${getUser.idUser}`);
       }
+      const getLot = await getDataLot(getUser.idLot);
+      io.to(getUser.room).emit('lot-data', getLot);
       const getUserBid = await getUserBidding(getUser.idLot);
       io.to(getUser.room).emit("bid", { dataBid: getUserBid });
     });
@@ -107,8 +111,11 @@ try {
     });
     
     socket.on("send-pemenang", async ({ create_by, id_bidding, nominal, nama, no_npl }) => {
-      const pemenang = await setUserPemenang(create_by, id_bidding, nominal, nama, no_npl)
-      io.emit("send-pemenang", pemenang);
+      const check = await getUserPemenang(id_bidding)
+      if(!check) {
+        const pemenang = await setUserPemenang(create_by, id_bidding, nominal, nama, no_npl)
+        io.emit("send-pemenang", pemenang);
+      }
     });
   
     socket.on("done-bidding", (message) => {
@@ -135,7 +142,7 @@ try {
       console.log('disconnect '+ socket.id)
       // console.log(user);
       if (getUser.status) {
-        const getUserAll = await getUsersData(getUser.room);
+        const getUserAll = await getUsersData(socket.id);
         io.to(getUser.room).emit("UserAll", getUserAll);
         await userLeave(socket.id);
         io.to(getUser.room).emit('message', { pesan: `${getUser.nama} keluar dari room ${getUser.room}`, id: '', data: '' });

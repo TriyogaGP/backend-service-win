@@ -372,7 +372,15 @@ async function _buildResponsePemenang(models, dataPemenang) {
 		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
 	});
 
-	let dataKumpulFoto = []
+	const getUser = await models.User.findAll({
+		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+	});
+
+	const getAdmin = await models.Admin.findAll({
+		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+	});
+
+	let dataKumpulFoto = [], dataUser = []
 	return dataPemenang.map(val => {
 		dataKumpulFoto = dataFotoBarangLelang
 		.filter(barleng => barleng.idBarangLelang === val.Bidding.LOT.idBarangLelang)
@@ -399,11 +407,16 @@ async function _buildResponsePemenang(models, dataPemenang) {
 			bukti: val.Bidding.NPL.PembelianNPL.bukti
 		});
 
-		let dataUser = Object.assign(val.Bidding.NPL.User, {
-			fotoPeserta: val.Bidding.NPL.User.fotoPeserta,
-			fotoKTP: val.Bidding.NPL.User.fotoKTP,
-			fotoNPWP: val.Bidding.NPL.User.fotoNPWP
-		});
+		if(val.Bidding.isAdmin == true){
+			dataUser = getAdmin.filter(value => value.idAdmin === val.Bidding.idNpl)[0]
+		}else if(val.Bidding.isAdmin == false){
+			dataUser = getUser.filter(value => value.idPeserta === val.Bidding.idNpl)[0]
+		}
+		// let dataUser = Object.assign(val.Bidding.NPL.User, {
+		// 	fotoPeserta: val.Bidding.NPL.User.fotoPeserta,
+		// 	fotoKTP: val.Bidding.NPL.User.fotoKTP,
+		// 	fotoNPWP: val.Bidding.NPL.User.fotoNPWP
+		// });
 
 		return {
 			idPemenangLelang: val.idPemenangLelang,
@@ -415,8 +428,10 @@ async function _buildResponsePemenang(models, dataPemenang) {
 			statusPembayaran: val.statusPembayaran,
 			bukti: val.bukti,
 			statusAktif: val.statusAktif,
+			idNpl: val.Bidding.idNpl,
 			data_bidding_terakhir: {
 				idBidding: val.Bidding.idBidding,
+				idNpl: val.Bidding.idNpl,
 				hargaHidding: val.Bidding.hargaBidding,
 				nominal: val.nominal,
 				isAdmin: val.Bidding.isAdmin,
@@ -436,7 +451,7 @@ async function _buildResponsePemenang(models, dataPemenang) {
 				idEvent: dataEvent.idEvent,
 				kodeEvent: dataEvent.kodeEvent,
 				namaEvent: dataEvent.namaEvent,
-				idPeserta: dataUser.idPeserta,
+				idUser: val.Bidding.isAdmin == 1 ? dataUser.idAdmin : dataUser.idPeserta,
 				nama: dataUser.nama,
 				email: dataUser.email,
 				noHP: dataUser.noHP,

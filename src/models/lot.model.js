@@ -75,6 +75,12 @@ const LOTScheme = Sequelize => {
       allowNull: true,
       field: 'deleted_at',
     },
+    expiredAt: {
+      type: DataTypes.DATE,
+      defaultValue: null,
+      allowNull: true,
+      field: 'expired_at',
+    },
   };
 };
 

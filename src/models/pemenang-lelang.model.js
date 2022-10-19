@@ -52,6 +52,12 @@ const PemenangLelangScheme = Sequelize => {
       allowNull: true,
       field: 'bukti',
     },
+    remarks: {
+      type: DataTypes.TEXT,
+      defaultValue: null,
+      allowNull: true,
+      field: 'remarks',
+    },
     statusAktif: {
       type: DataTypes.BOOLEAN,
       allowNull: true,

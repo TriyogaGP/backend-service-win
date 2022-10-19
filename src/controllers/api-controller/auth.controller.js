@@ -115,7 +115,7 @@ function blastEmail () {
 				service: 'gmail',
 				auth: {
 					user: 'triyoga.ginanjar.p@gmail.com',
-					pass: 'mdkqhwqbguuhggez' //Yoga17051993
+					pass: 'tarabtjmvwwkvpby' //YD070420yd@
 				}
 			});
 
@@ -162,7 +162,7 @@ function forgotPass (models) {
 				service: 'gmail',
 				auth: {
 					user: 'triyoga.ginanjar.p@gmail.com',
-					pass: 'mdkqhwqbguuhggez' //Yoga17051993
+					pass: 'tarabtjmvwwkvpby' //YD070420yd@
 				}
 			});
 

@@ -4,6 +4,12 @@ const { sequelizeInstance, Sequelize } = require('../configs/db.config');
 const { importModels } = require('../models/index')
 const models = importModels(sequelizeInstance, Sequelize);
 
+const dayjs = require('dayjs');
+const utc = require('dayjs/plugin/utc');
+const timezone = require('dayjs/plugin/timezone');
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 const userJoin = async (id, room, id_peserta, id_event, is_admin, device) => {
 	const cekData = await models.RoomJoin.findAll({where: { idEvent: id_event, idPeserta: id_peserta }})
   let user = null;
@@ -52,8 +58,8 @@ const getCurrentUser = async (user) => {
   }
 };
 
-const getUsersData = async (room) => {
-	const getData = await models.RoomJoin.findAll({where: { room: room }})
+const getUsersData = async (id) => {
+	const getData = await models.RoomJoin.findAll({where: { socketID: id }})
   const tampilData = await Promise.all(getData.map(async (val) => {
     let tampungData = []
     let table = val.isAdmin == 1 ? models.Admin : models.User;
@@ -109,7 +115,9 @@ const userJoinBidding = async (id, room, id_peserta, id_event, id_npl, id_lot, i
     await models.NPL.update(npl, {where: { idNpl: id_npl }});  
   }else{
     let lot = {
-      statusLot: 3
+      statusLot: 3,
+      // expiredAt: dayjs().add(2, 'minute').toDate()
+      expiredAt: dayjs().add(10, 'second').toDate()
     }
     await models.LOT.update(lot, {where: { noLot: room.split('_')[0] }});
   }
@@ -190,10 +198,10 @@ const getUserBidding = async (id_lot) => {
 	})
 
   if(getBid.length) {
-		const getNPL = await models.NPL.findOne({where: { idNpl: getBid[0].idNpl }})		
-		let table = getBid[0].isAdmin == 1 ? models.Admin : models.User;
-		let where = getBid[0].isAdmin == 1 ? { idAdmin: getBid[0].idNpl } : { idPeserta: getBid[0].idNpl };
-		const getUser = await table.findOne({where})
+    const getNPL = await models.NPL.findOne({where: { idNpl: getBid[0].idNpl }})		
+    let table = getBid[0].isAdmin == true ? models.Admin : models.User;
+    let where = getBid[0].isAdmin == true ? { idAdmin: getBid[0].idNpl } : { idPeserta: getNPL.idPeserta };
+    const getUser = await table.findOne({where})
     return { 
       dataBidding: { 
         ...getBid[0].dataValues, 
@@ -233,12 +241,22 @@ const setUserBidding = async (id_npl, id_lot, harga_bidding, is_admin) => {
 
 const setUserPemenang = async (create_by, id_bidding, nominal, nama, no_npl) => {
   let kirim = { 
-		createdBy: create_by, 
+		createBy: create_by, 
 		idBidding: id_bidding, 
-		nominal 
+		nominal,
+    remarks: 'Sudah ada pemenang nya !'
 	}
   await models.PemenangLelang.create(kirim);  
   return { id_bidding, nominal, nama, no_npl }
+};
+
+const getUserPemenang = async (id_bidding) => {
+  let jml = await models.PemenangLelang.count({ where: { idBidding: id_bidding} });  
+  if(jml > 1) {
+    return true
+  }else{
+    return false
+  }
 };
 
 const messageRoom = async (room, id_peserta, id_event, is_admin, pesan) => {
@@ -301,6 +319,15 @@ const userLeave = async (id) => {
   await models.RoomJoin.destroy({where: { socketID: id }});  
 };
 
+const getDataLot = async (idLot) => {
+	const getData = await models.LOT.findOne({where: { idLot: idLot }})
+  if(getData){
+		return getData
+  }else{
+    return null
+  }
+};
+
 module.exports = {
   userJoin,
   getCurrentUser,
@@ -311,7 +338,9 @@ module.exports = {
   getUserBidding,
   setUserBidding,
   setUserPemenang,
+  getUserPemenang,
   messageRoom,
   getUserData,
   userLeave,
+  getDataLot,
 };

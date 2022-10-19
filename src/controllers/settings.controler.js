@@ -86,6 +86,26 @@ function updateFile (models) {
   }  
 }
 
+function updateBerkas (models) {
+	return async (req, res, next) => {
+		let namaFile = req.files[0].filename;
+		let body = { ...req.body, namaFile };
+	  try {
+			let kirimdata, whereBy
+			if(body.table == 'm_barang_lelang'){
+				let splitData = body.nama_file.split('-')
+				kirimdata = splitData[1] == 'sph' ? { sph: body.nama_folder+'/'+body.namaFile } : 
+					splitData[1] == 'kir' ? { kir: body.nama_folder+'/'+body.namaFile } : ''
+				whereBy = body.proses == 'ADD' ? { namaBarangLelang: body.nama_barang_lelang } : { idBarangLelang: body.id }
+				await models.BarangLelang.update(kirimdata, { where: whereBy })
+			}
+			return OK(res);
+	  } catch (err) {
+			return NOT_FOUND(res, err.message)
+	  }
+	}  
+  }
+
 function getEncrypt () {
   return async (req, res, next) => {
 		let { kata } = req.query;
@@ -94,6 +114,7 @@ function getEncrypt () {
 				asli: kata,
 				hasil: encrypt(kata)
 			}
+
 			return OK(res, dataEncrypt);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
@@ -314,6 +335,7 @@ function getMeasurement (models) {
 
 module.exports = {
   updateFile,
+  updateBerkas,
   getEncrypt,
   getDecrypt,
   getRole,

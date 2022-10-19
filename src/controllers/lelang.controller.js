@@ -192,8 +192,8 @@ function crudBarangLelang (models) {
 					gradeMesin: body.grade_mesin,
 					noPolisi: body.no_polisi,
 					validSTNK: body.valid_stnk,
-					sph: body.sph,
-					kir: body.kir,
+					// sph: body.sph,
+					// kir: body.kir,
 					kapasitasKendaraan: body.kapasitas_kendaraan,
 					deskripsi: body.deskripsi,
 					statusAktif: 1,
@@ -227,8 +227,8 @@ function crudBarangLelang (models) {
 					gradeMesin: body.grade_mesin,
 					noPolisi: body.no_polisi,
 					validSTNK: body.valid_stnk,
-					sph: body.sph,
-					kir: body.kir,
+					// sph: body.sph,
+					// kir: body.kir,
 					kapasitasKendaraan: body.kapasitas_kendaraan,
 					deskripsi: body.deskripsi,
 					statusAktif: 1,
@@ -680,10 +680,6 @@ function getPemenang (models) {
 								include: [
 									{ 
 										model: models.PembelianNPL,
-										attributes,
-									},
-									{ 
-										model: models.User,
 										attributes,
 									},
 								],

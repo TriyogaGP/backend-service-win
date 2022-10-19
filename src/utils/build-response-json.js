@@ -121,6 +121,10 @@ async function _buildResponseDetailLelang(models, dataLelang) {
 			]
 		}
 
+		let dateNOW = new Date()
+		let dateExpiredAt = new Date(val.LOT.expiredAt)
+		let Difference_In_Time = dateExpiredAt.getTime() - dateNOW.getTime();
+
 		return {
 			idBarangLelang: val.idBarangLelang,
 			idKategori: val.idKategori,
@@ -154,6 +158,8 @@ async function _buildResponseDetailLelang(models, dataLelang) {
 			idLot: val.idLot,
 			noLot: val.LOT ? val.LOT.noLot : null,
 			hargaAwal: val.LOT ? val.LOT.hargaAwal : null,
+			expiredAt: val.LOT ? val.LOT.expiredAt : null,
+			selisihTime: val.LOT ? Difference_In_Time : null,
 			statusLot: val.LOT ? val.LOT.statusLot == 1 ? "Tidak Aktif" : val.LOT.statusLot == 2 ? "Aktif" : val.LOT.statusLot == 3 ? "Lelang" : "Terjual" : null,
 			tanggalevent: val.LOT ? convertDateTime(convertDate(val.LOT.Event.tanggalEvent) + " " + val.LOT.Event.waktuEvent) : null,
 			kodeEvent: val.LOT ? val.LOT.Event.kodeEvent : null,
