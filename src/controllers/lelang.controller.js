@@ -140,7 +140,15 @@ function getFotoBarangLelang (models) {
 			// 	return dataKumpul.push(objectBaru)
 			// })
 
-			return OK(res, dataFotoBarangLelang);
+			return OK(
+				res, 
+				{ dataFotoBarangLelang: 
+					{ 
+						FotoMobil: dataFotoBarangLelang.filter(val => val.kategori == 'Utama'), 
+						FotoKondisiMobil: dataFotoBarangLelang.filter(val => val.kategori == 'Kondisi')
+					}
+				}
+			);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }

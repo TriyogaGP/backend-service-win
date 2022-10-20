@@ -144,7 +144,10 @@ async function _buildResponseBarangLelang(models, dataBarangLelang) {
 			ktpPemilik: val.ktpPemilik,
 			kwitansi: val.kwitansi,
 			statusAktif: val.statusAktif,
-			dataFotoBarangLelang: dataKumpul,
+			dataFotoBarangLelang: {
+				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+			},
 		}
 	})
 }
@@ -271,7 +274,10 @@ async function _buildResponseLot(models, dataLot) {
 			statusAktif: val.statusAktif,
 			Event: dataEvent,
 			BarangLelang: dataBarLel,
-			dataFotoBarangLelang: dataKumpulFoto,
+			dataFotoBarangLelang: { 
+				FotoMobil: dataKumpulFoto.filter(val => val.kategori == 'Utama'), 
+				FotoKondisiMobil: dataKumpulFoto.filter(val => val.kategori == 'Kondisi')
+			},
 		}
 	})
 }
@@ -717,7 +723,10 @@ async function _buildResponseRoom(models, dataLot) {
 		statusAktif: dataLot.statusAktif,
 		Event: dataEvent,
 		BarangLelang: dataBarLel,
-		dataFotoBarangLelang: dataKumpulFoto,
+		dataFotoBarangLelang: { 
+			FotoMobil: dataKumpulFoto.filter(val => val.kategori == 'Utama'), 
+			FotoKondisiMobil: dataKumpulFoto.filter(val => val.kategori == 'Kondisi')
+		},
 	}
 }
 

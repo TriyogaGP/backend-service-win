@@ -17,6 +17,16 @@ const FotoBarangLelangScheme = Sequelize => {
       defaultValue: 0,
       field: 'id_barang_lelang'
     },
+    kategori: {
+      type: DataTypes.STRING(256),
+      allowNull: true,
+      field: 'kategori',
+    },
+    title: {
+      type: DataTypes.STRING(256),
+      allowNull: true,
+      field: 'title',
+    },
     gambar: {
       type: DataTypes.STRING(256),
       allowNull: true,

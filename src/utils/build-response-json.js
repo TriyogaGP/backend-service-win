@@ -81,7 +81,10 @@ async function _buildResponseLelang(models, dataLelang) {
 			alamatEvent: val.LOT ? val.LOT.Event.alamatEvent : null,
 			linkMaps: val.LOT ? val.LOT.Event.linkMaps : null,
 			statusAktif: val.statusAktif,
-			dataFotoBarangLelang: dataKumpul,
+			dataFotoBarangLelang: { 
+				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+			},
 		}
 	})
 }
@@ -176,7 +179,10 @@ async function _buildResponseDetailLelang(models, dataLelang) {
 			statusAktif: val.statusAktif,
 			detailBarangAtas,
 			detailBarang,
-			dataFotoBarangLelang: dataKumpul,
+			dataFotoBarangLelang: { 
+				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+			},
 		}
 	})
 }
@@ -244,7 +250,10 @@ async function _buildResponseLotLelang(models, dataLelang) {
 			alamatEvent: val.Event.alamatEvent,
 			linkMaps: val.Event.linkMaps,
 			statusAktif: val.statusAktif,
-			dataFotoBarangLelang: dataKumpul,
+			dataFotoBarangLelang: { 
+				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+			},
 		}
 	})
 }
@@ -334,7 +343,10 @@ async function _buildResponseDetailLot(models, dataLot) {
 			statusAktif: val.statusAktif,
 			detailBarangAtas,
 			detailBarang,
-			dataFotoBarangLelang: dataKumpul,
+			dataFotoBarangLelang: { 
+				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+			},
 		}
 	})
 }
