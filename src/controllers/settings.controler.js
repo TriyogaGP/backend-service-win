@@ -40,7 +40,13 @@ function updateFile (models) {
 				whereBy = body.proses == 'ADD' ? { namaBarangLelang: body.nama_barang_lelang } : { idBarangLelang: body.id }
 				await models.BarangLelang.update(kirimdata, { where: whereBy })
 			}else if(body.table == 'm_foto_barang_lelang'){
-				kirimdata = { idBarangLelang: body.id, gambar: body.nama_folder+'/'+body.namaFile, statusAktif: 1 }
+				kirimdata = { 
+					idBarangLelang: body.id,
+					title: body.title,
+					kategori: body.kategori,
+					gambar: body.nama_folder+'/'+body.namaFile,
+					statusAktif: 1
+				}
 				await models.FotoBarangLelang.create(kirimdata)
 			}else if(body.table == 'm_foto_produk'){
 				kirimdata = { idProduk: body.id, gambar: body.nama_folder+'/'+body.namaFile, statusAktif: 1 }
