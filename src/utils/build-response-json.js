@@ -279,18 +279,18 @@ async function _buildResponseDetailLot(models, dataLot) {
 
 		if(val.BarangLelang.KategoriLelang.kategori == 'Mobil' || val.BarangLelang.KategoriLelang.kategori == 'Motor'){
 			detailBarangAtas = [
-				{ icon: BASE_URL+'bahan/bahanbakar.png', name: 'Bahan Bakar', text: val.bahanBakar },
-				{ icon: BASE_URL+'bahan/transmisi.png', name: 'Transmisi', text: val.transmisi },
-				{ icon: BASE_URL+'bahan/seat.png', name: 'Kapasitas', text: val.kapasitasKendaraan },
+				{ icon: BASE_URL+'bahan/bahanbakar.png', name: 'Bahan Bakar', text: val.BarangLelang.bahanBakar },
+				{ icon: BASE_URL+'bahan/transmisi.png', name: 'Transmisi', text: val.BarangLelang.transmisi },
+				{ icon: BASE_URL+'bahan/seat.png', name: 'Kapasitas', text: val.BarangLelang.kapasitasKendaraan },
 				{ icon: BASE_URL+'bahan/pintu.png', name: 'Pintu', text: 'Empat (4)' },
 			]
 			detailBarang = [
-				{ icon: BASE_URL+'bahan/nopol.png', name: 'No Polisi', text: val.noPolisi },
-				{ icon: BASE_URL+'bahan/model.png', name: 'Tipe / Model', text: val.tipeModel },
-				{ icon: BASE_URL+'bahan/warna.png', name: 'Warna', text: val.warna },
-				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Mesin', text: val.noMesin },
-				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Rangka', text: val.noRangka },
-				{ icon: BASE_URL+'bahan/kilometer.png', name: 'Kilometer', text: val.odometer },
+				{ icon: BASE_URL+'bahan/nopol.png', name: 'No Polisi', text: val.BarangLelang.noPolisi },
+				{ icon: BASE_URL+'bahan/model.png', name: 'Tipe / Model', text: val.BarangLelang.tipeModel },
+				{ icon: BASE_URL+'bahan/warna.png', name: 'Warna', text: val.BarangLelang.warna },
+				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Mesin', text: val.BarangLelang.noMesin },
+				{ icon: BASE_URL+'bahan/nomesindanrangka.png', name: 'No Rangka', text: val.BarangLelang.noRangka },
+				{ icon: BASE_URL+'bahan/kilometer.png', name: 'Kilometer', text: val.BarangLelang.odometer },
 			]
 		}
 
