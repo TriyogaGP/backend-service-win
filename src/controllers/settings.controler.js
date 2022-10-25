@@ -331,7 +331,10 @@ function getMeasurement (models) {
 			if(status_aktif) {
 				where.statusAktif = status_aktif
 			}
-      const dataMeasurement = await models.Measurement.findAll({where});
+      const dataMeasurement = await models.Measurement.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+			});
 			return OK(res, dataMeasurement);
     } catch (err) {
 			return NOT_FOUND(res, err.message)

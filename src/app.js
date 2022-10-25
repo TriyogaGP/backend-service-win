@@ -23,6 +23,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server, { cors: { origin: "*" } });
+const swagger = require('./swagger')
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -55,6 +56,8 @@ try {
   app.use('/api/v1/lelang', lelang(models));
   app.use('/api/v1/ecommerce', ecommerce(models));
   app.use('/api/v1/emall', emall(models));
+  
+  app.use(swagger());
   
   //Socket IO
   const {

@@ -82,8 +82,8 @@ async function _buildResponseLelang(models, dataLelang) {
 			linkMaps: val.LOT ? val.LOT.Event.linkMaps : null,
 			statusAktif: val.statusAktif,
 			dataFotoBarangLelang: { 
-				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
-				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+				FotoUtama: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisi: dataKumpul.filter(val => val.kategori == 'Kondisi')
 			},
 		}
 	})
@@ -180,8 +180,8 @@ async function _buildResponseDetailLelang(models, dataLelang) {
 			detailBarangAtas,
 			detailBarang,
 			dataFotoBarangLelang: { 
-				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
-				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+				FotoUtama: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisi: dataKumpul.filter(val => val.kategori == 'Kondisi')
 			},
 		}
 	})
@@ -251,8 +251,8 @@ async function _buildResponseLotLelang(models, dataLelang) {
 			linkMaps: val.Event.linkMaps,
 			statusAktif: val.statusAktif,
 			dataFotoBarangLelang: { 
-				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
-				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+				FotoUtama: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisi: dataKumpul.filter(val => val.kategori == 'Kondisi')
 			},
 		}
 	})
@@ -344,8 +344,8 @@ async function _buildResponseDetailLot(models, dataLot) {
 			detailBarangAtas,
 			detailBarang,
 			dataFotoBarangLelang: { 
-				FotoMobil: dataKumpul.filter(val => val.kategori == 'Utama'), 
-				FotoKondisiMobil: dataKumpul.filter(val => val.kategori == 'Kondisi')
+				FotoUtama: dataKumpul.filter(val => val.kategori == 'Utama'), 
+				FotoKondisi: dataKumpul.filter(val => val.kategori == 'Kondisi')
 			},
 		}
 	})

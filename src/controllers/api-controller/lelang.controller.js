@@ -57,10 +57,10 @@ function getBarangLelang (models) {
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 				order
 			});
-
+			
 			let wherein = []
 			dataPeserta.map(val => wherein.push(val.idEvent))
-
+			
       const dataBarangLelang = await models.BarangLelang.findAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
@@ -89,9 +89,11 @@ function getBarangLelang (models) {
 				return objectBaru
 			}))
 
+			let hasilKumpul = await kumpul.filter(val => val.LOT !== null)
+
 			let hasilData = []
 			if(id_kategori){	
-				hasilData = kumpul.filter(val => val.idKategori == Number(id_kategori))
+				hasilData = hasilKumpul.filter(val => val.idKategori == Number(id_kategori))
 				if(keyword) {
 					let searchRegExp = new RegExp(keyword , 'i');
 					hasilData = hasilData.filter(val => {
@@ -102,19 +104,19 @@ function getBarangLelang (models) {
 			
 			if(keyword && !id_kategori) {
   			let searchRegExp = new RegExp(keyword , 'i');
-				hasilData = kumpul.filter(val => {
+				hasilData = hasilKumpul.filter(val => {
 					return searchRegExp.test(val.namaBarangLelang)
 				})
 			}
 
 			if(id_barang_lelang){
-				let hasil = await _buildResponseDetailLelang(models, kumpul)
+				let hasil = await _buildResponseDetailLelang(models, hasilKumpul)
 				return OK(res, hasil[0]);
 			}
 
 			let hasilNih = []
 			if(id_peserta && !id_kategori && !keyword) {
-				kumpul.map(val => {
+				hasilKumpul.map(val => {
 					let result = wherein.includes(val.LOT.idEvent)
 					if(result) return hasilNih.push(val);
 				})
@@ -151,7 +153,7 @@ function getEventLelang (models) {
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 				order
 			});
-
+			
 			let wherein = []
 			dataPeserta.map(val => wherein.push(val.idEvent))
 

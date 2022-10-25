@@ -1,0 +1,586 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1-oas3", 
+    "title": "Win Backend Service",
+    "description": "Win Project Application API"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api/v1"
+    },
+    {
+			"url": "http://localhost:3000/apirest/v1"
+    },
+    {
+			"url": "https://backendwin.addityar.xyz/api/v1"
+    },
+    {
+      "url": "https://backendwin.addityar.xyz/apirest/v1"
+    }
+  ],
+	"security": [
+		{
+			"bearerAuth": []
+		}
+	],
+  "tags": [
+    {
+      "name": "CMS Auth",
+      "description": "API untuk Login, Ubah Kata Sandi, Profile, Address, Dashboard"
+    },
+    {
+      "name": "API Auth",
+      "description": "API untuk Login, Register, ubahKataSandi"
+    },
+    {
+      "name": "CMS Settings",
+      "description": "API untuk data Settings"
+    }
+  ],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+	"components": {
+		"schemas": {},
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		}
+	},
+	"paths": {
+		"/auth/loginAdmin": {
+			"post": {
+				"tags": ["CMS Auth"],
+				"summary": "Login Admin (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"username": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									},
+									"lat": {
+										"type": "string"
+									},
+									"long": {
+										"type": "string"
+									}
+								},
+								"required": ["username", "password", "lat", "long"]
+							},
+							"examples": {
+								"Login dengan Username": {
+									"value": {
+										"username": "YD070420",	
+										"password": "YD070420",	
+										"lat": "-6.4561821",	
+										"long": "106.8532497"	
+									}
+								},
+								"Login dengan Email": {
+									"value": {
+										"username": "triyoga.ginanjar.p@gmail.com",	
+										"password": "YD070420",	
+										"lat": "-6.4561821",	
+										"long": "106.8532497"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/loginPeserta": {
+			"post": {
+				"tags": ["CMS Auth"],
+				"summary": "Login Peserta (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"example": "triyoga.ginanjar.p@gmail.com"	
+									},
+									"password": {
+										"type": "string",
+										"example": "triyogagp123"	
+									},
+									"lat": {
+										"type": "string",
+										"example": "-6.4561821"	
+									},
+									"long": {
+										"type": "string",
+										"example": "106.8532497"	
+									}
+								},
+								"required": ["username", "password", "lat", "long"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/getProfile": {
+			"get": {
+				"tags": ["CMS Auth"],
+				"summary": "Untuk Data Profile (CMS)",
+				"parameters": [
+					{
+						"name": "by",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["Admin", "Peserta"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_login",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/getAddress/{idLogin}": {
+			"get": {
+				"tags": ["CMS Auth"],
+				"summary": "Untuk List Data Address (CMS)",
+				"parameters": [
+					{
+						"name": "idLogin",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "1"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/getDashboard": {
+			"get": {
+				"tags": ["CMS Auth"],
+				"summary": "Untuk Data Dashboard (CMS)",
+				"parameters": [
+					{
+						"name": "by",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["Admin", "Peserta"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_login",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_role",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/ubahKataSandi": {
+			"post": {
+				"tags": ["CMS Auth"],
+				"summary": "Ubah Kata Sandi (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_login": {
+										"type": "string"
+									},
+									"passwordLama": {
+										"type": "string"
+									},
+									"passwordBaru": {
+										"type": "string"
+									},
+									"passwordConfBaru": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								},
+								"required": ["jenis", "id_login", "passwordLama", "passwordBaru", "passwordConfBaru", "create_update_by"]
+							},
+							"examples": {
+								"Ubah Kata Sandi Admin": {
+									"value": {
+										"jenis": "Admin",	
+										"id_login": "1",	
+										"passwordLama": "YD070420",	
+										"passwordBaru": "12345",	
+										"passwordConfBaru": "12345",	
+										"create_update_by": "1"
+									}
+								},
+								"Ubah Kata Sandi Peserta": {
+									"value": {
+										"jenis": "Peserta",	
+										"id_login": "1",	
+										"passwordLama": "tes12345",	
+										"passwordBaru": "12345",	
+										"passwordConfBaru": "12345",	
+										"create_update_by": "1"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/settings/encryptPass": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk encrypt kata sandi",
+				"parameters": [
+					{
+						"name": "kata",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/decryptPass": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk decrypt kata sandi",
+				"parameters": [
+					{
+						"name": "kata",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getRole": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Hak Akses (CMS)",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getMenu": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Menu (CMS)",
+				"parameters": [
+					{
+						"name": "idRole",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getKurir": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Kurir (CMS)",
+				"parameters": [
+					{
+						"name": "idKurir",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getKurirService/{idKurir}": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Kurir Service (CMS)",
+				"parameters": [
+					{
+						"name": "idKurir",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": "1"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getPayment": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Metode Pembayaran (CMS)",
+				"parameters": [
+					{
+						"name": "idPayment",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getWilayah": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Wilayah (CMS)",
+				"parameters": [
+					{
+						"name": "bagian",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["provinsi", "kabkota", "kecamatan", "kelurahan", "kabkotaOnly"],
+							"example": ""
+						}
+					},
+					{
+						"name": "KodeWilayah",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getLoggerAdmin": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Logger Admin (CMS)",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getLoggerPeserta": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Logger Peserta (CMS)",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/settings/getMeasurement": {
+			"get": {
+				"tags": ["CMS Settings"],
+				"summary": "Untuk List Data Ukuran Bobot (CMS)",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		}
+	}
+}
