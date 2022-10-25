@@ -277,18 +277,16 @@ function getFasilitasMall (models) {
 		let order = []
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
 			if(id_mall) {
 				where.idMall = id_mall
 				where.statusAktif = 1  
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataFasilitasMall = await models.FasilitasMall.findAll({
 				where,
@@ -383,18 +381,16 @@ function getTenantMall (models) {
 		let order = []
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
 			if(id_admin) { 
 				where.idAdmin = id_admin 
 				where.statusAktif = 1 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       const dataTenantMall = await models.TenantMall.findAll({
 				where,

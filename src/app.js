@@ -47,15 +47,15 @@ try {
   });
   //api
   app.use('/apirest/v1/auth', authApi(models));
-  app.use('/apirest/v1/lelang', lelangApi(models));
-  app.use('/apirest/v1/ecommerce', ecommerceApi(models));
+  app.use('/apirest/v1/lelang', verifyToken, lelangApi(models));
+  app.use('/apirest/v1/ecommerce', verifyToken, ecommerceApi(models));
   //cms
   app.use('/api/v1/auth', auth(models));
-  app.use('/api/v1/settings', settings(models));
-  app.use('/api/v1/admin', admin(models));
-  app.use('/api/v1/lelang', lelang(models));
-  app.use('/api/v1/ecommerce', ecommerce(models));
-  app.use('/api/v1/emall', emall(models));
+  app.use('/api/v1/settings', verifyToken, settings(models));
+  app.use('/api/v1/admin', verifyToken, admin(models));
+  app.use('/api/v1/lelang', verifyToken, lelang(models));
+  app.use('/api/v1/ecommerce', verifyToken, ecommerce(models));
+  app.use('/api/v1/emall', verifyToken, emall(models));
   
   app.use(swagger());
   

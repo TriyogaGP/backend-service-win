@@ -3,20 +3,14 @@
   "info": {
     "version": "1-oas3", 
     "title": "Win Backend Service",
-    "description": "Win Project Application API"
+    "description": "<b>Win Project Application API</b> <br> \n\n <b>Catatan :</b> \n\n - Untuk <b>CMS</b> url menggunakan /api/v1 \n\n - Untuk <b>API</b> url menggunakan /apirest/v1"
   },
   "servers": [
     {
-      "url": "http://localhost:3000/api/v1"
+      "url": "http://localhost:3000"
     },
     {
-			"url": "http://localhost:3000/apirest/v1"
-    },
-    {
-			"url": "https://backendwin.addityar.xyz/api/v1"
-    },
-    {
-      "url": "https://backendwin.addityar.xyz/apirest/v1"
+      "url": "https://backendwin.addityar.xyz"
     }
   ],
 	"security": [
@@ -26,16 +20,40 @@
 	],
   "tags": [
     {
+      "name": "CMS Settings",
+      "description": "API untuk data Settings"
+    },
+		{
       "name": "CMS Auth",
       "description": "API untuk Login, Ubah Kata Sandi, Profile, Address, Dashboard"
     },
     {
-      "name": "API Auth",
-      "description": "API untuk Login, Register, ubahKataSandi"
+      "name": "CMS Admin",
+      "description": "API untuk Data Admin dan Peserta"
     },
     {
-      "name": "CMS Settings",
-      "description": "API untuk data Settings"
+      "name": "CMS Lelang",
+      "description": "API untuk Data Lelang"
+    },
+    {
+      "name": "CMS E-Commerce",
+      "description": "API untuk Data E-Commerce"
+    },
+    {
+      "name": "CMS E-Mall",
+      "description": "API untuk Data E-Mall"
+    },
+    {
+      "name": "API Auth",
+      "description": "API untuk Login, Register, Blast Email, Lupa Kata Sandi DLL"
+    },
+    {
+      "name": "API Lelang",
+      "description": "API untuk Data Lelang"
+    },
+    {
+      "name": "API E-Commerce",
+      "description": "API untuk Data E-Commerce"
     }
   ],
   "consumes": ["application/json"],
@@ -51,7 +69,7 @@
 		}
 	},
 	"paths": {
-		"/auth/loginAdmin": {
+		"/api/v1/auth/loginAdmin": {
 			"post": {
 				"tags": ["CMS Auth"],
 				"summary": "Login Admin (CMS)",
@@ -108,7 +126,7 @@
 				}
 			}
 		},
-		"/auth/loginPeserta": {
+		"/api/v1/auth/loginPeserta": {
 			"post": {
 				"tags": ["CMS Auth"],
 				"summary": "Login Peserta (CMS)",
@@ -151,7 +169,7 @@
 				}
 			}
 		},
-		"/auth/getProfile": {
+		"/api/v1/auth/getProfile": {
 			"get": {
 				"tags": ["CMS Auth"],
 				"summary": "Untuk Data Profile (CMS)",
@@ -188,7 +206,7 @@
 				}
 			}
 		},
-		"/auth/getAddress/{idLogin}": {
+		"/api/v1/auth/getAddress/{idLogin}": {
 			"get": {
 				"tags": ["CMS Auth"],
 				"summary": "Untuk List Data Address (CMS)",
@@ -198,6 +216,7 @@
 						"in": "path",
 						"style": "simple",
 						"explode": false,
+						"required": true,
 						"schema": {
 							"type": "string",
 							"example": "1"
@@ -214,7 +233,7 @@
 				}
 			}
 		},
-		"/auth/getDashboard": {
+		"/api/v1/auth/getDashboard": {
 			"get": {
 				"tags": ["CMS Auth"],
 				"summary": "Untuk Data Dashboard (CMS)",
@@ -261,7 +280,7 @@
 				}
 			}
 		},
-		"/auth/ubahKataSandi": {
+		"/api/v1/auth/ubahKataSandi": {
 			"post": {
 				"tags": ["CMS Auth"],
 				"summary": "Ubah Kata Sandi (CMS)",
@@ -329,7 +348,3169 @@
 			}
 		},
 
-		"/settings/encryptPass": {
+		"/api/v1/admin/getAdmin": {
+			"get": {
+				"tags": ["CMS Admin"],
+				"summary": "Untuk Data Admin (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_admin",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "level",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/admin/postAdmin": {
+			"post": {
+				"tags": ["CMS Admin"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD ADMIN (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_admin": {
+										"type": "string"
+									},
+									"level": {
+										"type": "string"
+									},
+									"downline_tenant": {
+										"type": "string"
+									},
+									"nama": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string"
+									},
+									"username": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									},
+									"kota": {
+										"type": "string"
+									},
+									"no_hp": {
+										"type": "string"
+									},
+									"alamat": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",	
+										"id_admin": null,	
+										"level": "1",	
+										"downline_tenant": "2",	
+										"nama": "Coba Tester",	
+										"email": "coba.tester@gmail.com",	
+										"username": "cobatester",	
+										"password": "cobatester",
+										"kota": "Bandung",
+										"no_hp": "0987654321",
+										"alamat": "Ciparay",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",	
+										"id_admin": "11",	
+										"level": "1",	
+										"downline_tenant": "2",	
+										"nama": "Coba Tester",	
+										"email": "coba.tester@gmail.com",	
+										"username": "cobatester",	
+										"password": "cobatester",
+										"kota": "Bandung",
+										"no_hp": "0987654321",
+										"alamat": "Ciparay",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_admin": "11",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_admin": "11",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/admin/getPeserta": {
+			"get": {
+				"tags": ["CMS Admin"],
+				"summary": "Untuk Data Peserta (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/admin/postPeserta": {
+			"post": {
+				"tags": ["CMS Admin"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD PESERTA (CMS)",
+				"description": "<b>Catatan :</b> \n\n - Untuk value UnixText Terdiri dari `Peserta` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: Peserta20220803Luj67Go1</b> \n\n - Untuk value bertindak_mewakili hanya bisa di isi dengan `Individu` dan `Perusahaan`",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"UnixText": {
+										"type": "string"
+									},
+									"id_peserta": {
+										"type": "string"
+									},
+									"nik": {
+										"type": "string"
+									},
+									"nama": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string"
+									},
+									"password": {
+										"type": "string"
+									},
+									"no_hp": {
+										"type": "string"
+									},
+									"alamat": {
+										"type": "string"
+									},
+									"kode_pos": {
+										"type": "string"
+									},
+									"npwp": {
+										"type": "string"
+									},
+									"no_rek": {
+										"type": "string"
+									},
+									"nama_rek": {
+										"type": "string"
+									},
+									"bertindak_mewakili": {
+										"type": "string"
+									},
+									"nama_perusahan": {
+										"type": "string"
+									},
+									"npwp_perusahaan": {
+										"type": "string"
+									},
+									"alamat_perusahaan": {
+										"type": "string"
+									},
+									"telp_kantor": {
+										"type": "string"
+									},
+									"email_kantor": {
+										"type": "string"
+									},
+									"sumber_dana": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_peserta": null,
+										"UnixText": "Peserta20220802l4AO7N2n",
+										"nik": "987654321",
+										"nama": "coba",
+										"email": "coba@gmail.com",
+										"password": "coba123",
+										"no_hp": "0987654321",
+										"alamat": "Bogor",
+										"kode_pos": "16917",
+										"npwp": "0987654321",
+										"no_rek": "987654321",
+										"nama_rek": "coba",
+										"bertindak_mewakili": "Individu",
+										"nama_perusahaan": null,
+										"npwp_perusahaan": null,
+										"alamat_perusahaan": null,
+										"telp_kantor": null,
+										"email_kantor": null,
+										"sumber_dana": "Sendiri",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_peserta": "3",
+										"UnixText": "Peserta20220802l4AO7N2n",
+										"nik": "987654321",
+										"nama": "coba",
+										"email": "coba@gmail.com",
+										"password": "coba123",
+										"no_hp": "0987654321",
+										"alamat": "Bogor",
+										"kode_pos": "16917",
+										"npwp": "0987654321",
+										"no_rek": "987654321",
+										"nama_rek": "coba",
+										"bertindak_mewakili": "Individu",
+										"nama_perusahaan": null,
+										"npwp_perusahaan": null,
+										"alamat_perusahaan": null,
+										"telp_kantor": null,
+										"email_kantor": null,
+										"sumber_dana": "Sendiri",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_peserta": "4",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_peserta": "4",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						},
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string",
+										"example": ""
+									},
+									"UnixText": {
+										"type": "string",
+										"example": "Peserta20220802l4AO7N2n"
+									},
+									"nama": {
+										"type": "string",
+										"example": ""
+									},
+									"email": {
+										"type": "string",
+										"example": ""
+									},
+									"password": {
+										"type": "string",
+										"example": ""
+									},
+									"no_hp": {
+										"type": "string",
+										"example": ""
+									},
+									"alamat": {
+										"type": "string",
+										"example": ""
+									},
+									"kode_pos": {
+										"type": "string",
+										"example": ""
+									},
+									"npwp": {
+										"type": "string",
+										"example": ""
+									},
+									"no_rek": {
+										"type": "string",
+										"example": ""
+									},
+									"nama_rek": {
+										"type": "string",
+										"example": ""
+									},
+									"bertindak_mewakili": {
+										"type": "enum",
+										"enum": ["Individu", "Perusahaan"],
+										"example": ""
+									},
+									"nama_perusahan": {
+										"type": "string",
+										"example": ""
+									},
+									"npwp_perusahaan": {
+										"type": "string",
+										"example": ""
+									},
+									"alamat_perusahaan": {
+										"type": "string",
+										"example": ""
+									},
+									"telp_kantor": {
+										"type": "string",
+										"example": ""
+									},
+									"email_kantor": {
+										"type": "string",
+										"example": ""
+									},
+									"sumber_dana": {
+										"type": "string",
+										"example": ""
+									},
+									"foto_ktp": {
+										"type": "file",
+										"format": "binary"
+									},
+									"foto_npwp": {
+										"type": "file",
+										"format": "binary"
+									},
+									"status_aktif": {
+										"type": "string",
+										"example": ""
+									},
+									"create_update_by": {
+										"type": "string",
+										"example": ""
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/api/v1/lelang/getKategoriLelang": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Kategori Lelang (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/postKategoriLelang": {
+			"post": {
+				"tags": ["CMS Lelang"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD KATEGORI LELANG (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_kategori": {
+										"type": "string"
+									},
+									"kategori": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_kategori": null,
+										"kategori": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_kategori": "3",
+										"kategori": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_kategori": "3",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_kategori": "3",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getBarangLelang": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Barang Lelang (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/prosesBarangLelang": {
+			"post": {
+				"tags": ["CMS Lelang"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD BARANG LELANG (CMS)",
+				"description": "<b>Catatan :</b> \n\n - Untuk value UnixText Terdiri dari `BarangLelang` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: BarangLelang20220803Luj67Go1</b>",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"UnixText": {
+										"type": "string"
+									},
+									"id_kategori": {
+										"type": "string"
+									},
+									"id_barang_lelang": {
+										"type": "string"
+									},
+									"nama_barang_lelang": {
+										"type": "string"
+									},
+									"nama_pemilik": {
+										"type": "string"
+									},
+									"brand": {
+										"type": "string"
+									},
+									"warna": {
+										"type": "string"
+									},
+									"tahun": {
+										"type": "string"
+									},
+									"lokasi_barang": {
+										"type": "string"
+									},
+									"no_rangka": {
+										"type": "string"
+									},
+									"no_mesin": {
+										"type": "string"
+									},
+									"tipe_model": {
+										"type": "string"
+									},
+									"transmisi": {
+										"type": "string"
+									},
+									"bahan_bakar": {
+										"type": "string"
+									},
+									"odometer": {
+										"type": "string"
+									},
+									"grade": {
+										"type": "string"
+									},
+									"grade_interior": {
+										"type": "string"
+									},
+									"grade_eksterior": {
+										"type": "string"
+									},
+									"grade_mesin": {
+										"type": "string"
+									},
+									"no_polisi": {
+										"type": "string"
+									},
+									"valid_stnk": {
+										"type": "string"
+									},
+									"kapasitas_kendaraan": {
+										"type": "string"
+									},
+									"deskripsi": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"UnixText": "BarangLelang20220803Luj67Go1",
+										"id_kategori": "1",
+										"id_barang_lelang": null,
+										"nama_barang_lelang": "Tes",
+										"nama_pemilik": "ahay",
+										"brand": "Lokal",
+										"warna": "Hitam",
+										"tahun": "2018",
+										"lokasi_barang": "Bekasi",
+										"no_rangka": "ABC1234567890",
+										"no_mesin": "CDF1234567890",
+										"tipe_model": "Minibus",
+										"transmisi": "Manual",
+										"bahan_bakar": "Solar",
+										"odometer": "100000",
+										"grade": "C",
+										"grade_interior": "B",
+										"grade_eksterior": "A",
+										"grade_mesin": "B",
+										"no_polisi": "F 1234 PJ",
+										"valid_stnk": "2021-05-13",
+										"kapasitas_kendaraan": "10",
+										"deskripsi": "Hahahahahaha",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"UnixText": "BarangLelang20220803Luj67Go1",
+										"id_kategori": "1",
+										"id_barang_lelang": "1",
+										"nama_barang_lelang": "Tes",
+										"nama_pemilik": "ahay",
+										"brand": "Lokal",
+										"warna": "Hitam",
+										"tahun": "2018",
+										"lokasi_barang": "Bekasi",
+										"no_rangka": "ABC1234567890",
+										"no_mesin": "CDF1234567890",
+										"tipe_model": "Minibus",
+										"transmisi": "Manual",
+										"bahan_bakar": "Solar",
+										"odometer": "100000",
+										"grade": "C",
+										"grade_interior": "B",
+										"grade_eksterior": "A",
+										"grade_mesin": "B",
+										"no_polisi": "F 1234 PJ",
+										"valid_stnk": "2021-05-13",
+										"kapasitas_kendaraan": "10",
+										"deskripsi": "Hahahahahaha",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_barang_lelang": "4",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_barang_lelang": "4",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getFotoBarangLelang/{idBarangLelang}": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Foto Barang Lelang (CMS)",
+				"parameters": [
+					{
+						"name": "idBarangLelang",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getEvent": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Event (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/prosesEvent": {
+			"post": {
+				"tags": ["CMS Lelang"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD EVENT (CMS)",
+				"description": "<b>Catatan :</b> \n\n - Untuk value UnixText Terdiri dari `Event` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: Event20220803Luj67Go1</b>",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"UnixText": {
+										"type": "string"
+									},
+									"id_event": {
+										"type": "string"
+									},
+									"kode_event": {
+										"type": "string"
+									},
+									"nama_event": {
+										"type": "string"
+									},
+									"pass_event": {
+										"type": "string"
+									},
+									"deskripsi_event": {
+										"type": "string"
+									},
+									"kelipatan_bid": {
+										"type": "string"
+									},
+									"tanggal_event": {
+										"type": "string"
+									},
+									"waktu_event": {
+										"type": "string"
+									},
+									"alamat_event": {
+										"type": "string"
+									},
+									"link_maps": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"UnixText": "Event20220803Luj67Go1",
+										"id_event": null,
+										"kode_event": "97531",
+										"nama_event": "Event Percobaan",
+										"pass_event": "123456789",
+										"deskripsi_event": "ini hanya percobaan",
+										"kelipatan_bid": "500000",
+										"tanggal_event": "2022-10-25",
+										"waktu_event": "10:00:00",
+										"alamat_event": "Bogor",
+										"link_maps": "https://www.goggle.com/",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"UnixText": "Event20220803Luj67Go1",
+										"id_event": "5",
+										"kode_event": "97531",
+										"nama_event": "Event Percobaan",
+										"pass_event": "123456789",
+										"deskripsi_event": "ini hanya percobaan",
+										"kelipatan_bid": "500000",
+										"tanggal_event": "2022-10-25",
+										"waktu_event": "10:00:00",
+										"alamat_event": "Bogor",
+										"link_maps": "https://www.goggle.com/",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_event": "5",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_event": "5",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getLot": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data LOT Barang Lelang (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/postLot": {
+			"post": {
+				"tags": ["CMS Lelang"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD LOT (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_lot": {
+										"type": "string"
+									},
+									"id_barang_lelang": {
+										"type": "string"
+									},
+									"id_event": {
+										"type": "string"
+									},
+									"no_lot": {
+										"type": "string"
+									},
+									"harga_awal": {
+										"type": "string"
+									},
+									"status_lot": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_lot": null,
+										"id_barang_lelang": "4",
+										"id_event": "2",
+										"no_lot": "0020",
+										"harga_awal": "56000000",
+										"status_lot": "2",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_lot": "4",
+										"id_barang_lelang": "4",
+										"id_event": "2",
+										"no_lot": "0020",
+										"harga_awal": "56000000",
+										"status_lot": "2",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_event": "4",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_event": "4",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getNPL": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Nomor Peserta Lelang (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "kategori",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["withNPL", "NPL"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_event",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/postPembelianNPL": {
+			"post": {
+				"tags": ["CMS Lelang"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD, STATUSVERIFIKASI, VERIFIKASI PEMBELIAN NPL (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_pembelian_npl": {
+										"type": "string"
+									},
+									"id_event": {
+										"type": "string"
+									},
+									"id_peserta": {
+										"type": "string"
+									},
+									"type_pembelian": {
+										"type": "string"
+									},
+									"type_transaksi": {
+										"type": "string"
+									},
+									"no_pembelian": {
+										"type": "string"
+									},
+									"nominal": {
+										"type": "string"
+									},
+									"tanggal_transfer": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"verifikasi": {
+										"type": "string"
+									},
+									"pesan_verifikasi": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_pembelian_npl": null,
+										"id_event": "2",
+										"id_peserta": "2",
+										"type_pembelian": "1",
+										"type_transaksi": "2",
+										"no_pembelian": "9753124680.2",
+										"nominal": "2500000",
+										"tanggal_transfer": "2022-10-25",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_pembelian_npl": "6",
+										"id_event": "2",
+										"id_peserta": "2",
+										"type_pembelian": "1",
+										"type_transaksi": "2",
+										"no_pembelian": "9753124680.2",
+										"nominal": "2500000",
+										"tanggal_transfer": "2022-10-25",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_pembelian_npl": "6",
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",
+										"id_pembelian_npl": "6",
+										"status_aktif": "1"	
+									}
+								},
+								"STATUSVERIFIKASI": {
+									"value": {
+										"jenis": "STATUSRECORD",
+										"id_pembelian_npl": "6",
+										"verifikasi": "1"	
+									}
+								},
+								"VERIFIKASI": {
+									"value": {
+										"jenis": "STATUSRECORD",
+										"id_pembelian_npl": "6",
+										"pesan_verifikasi": "sudah lunas"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/postNPL": {
+			"post": {
+				"tags": ["CMS Lelang"],
+				"summary": "Proses EDIT NOMOR PESERTA LELANG (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_npl": {
+										"type": "string"
+									},
+									"no_npl": {
+										"type": "string"
+									},
+									"status_npl": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_npl": "8",
+										"no_npl": "NPL_00002",
+										"status_npl": "0",
+										"create_update_by": "1"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getPemenang": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Pemenang (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/postPemenang": {
+			"post": {
+				"tags": ["CMS Lelang"],
+				"summary": "Proses EDIT, DELETE, STATUSRECORD PEMENANG (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_pemenang_lelang": {
+										"type": "string"
+									},
+									"no_rek": {
+										"type": "string"
+									},
+									"nama_pemilik": {
+										"type": "string"
+									},
+									"tanggal_transfer": {
+										"type": "string"
+									},
+									"tipe_pelunasan": {
+										"type": "string"
+									},
+									"status_pembayaran": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_pemenang_lelang": "2",
+										"no_rek": "0987654321",
+										"nama_pemilik": "ahay",
+										"tanggal_transfer": "2022-10-25 10:00:00",
+										"tipe_pelunasan": "2",
+										"status_pembayaran": "1",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_pemenang_lelang": "2",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_pemenang_lelang": "2",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getEventActive": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Event Active (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getRoomEvent": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Room Active (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "no_lot",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/lelang/getBidLelang": {
+			"get": {
+				"tags": ["CMS Lelang"],
+				"summary": "Untuk Data Bid Lelang (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/api/v1/ecommerce/getKategoriProduk": {
+			"get": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Untuk Data Kategori Produk (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/postKategoriProduk": {
+			"post": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD KATEGORI PRODUK (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_kategori_produk": {
+										"type": "string"
+									},
+									"kategori_produk": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_kategori_produk": null,
+										"kategori_produk": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_kategori_produk": "3",
+										"kategori_produk": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_kategori_produk": "3",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_kategori_produk": "3",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/getProduk": {
+			"get": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Untuk Data Produk (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/getFotoProduk/{idProduk}": {
+			"get": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Untuk Data Foto Produk (CMS)",
+				"parameters": [
+					{
+						"name": "idProduk",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/getHistoryStock/{idProduk}": {
+			"get": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Untuk Data History Stock Produk (CMS)",
+				"parameters": [
+					{
+						"name": "idProduk",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/postProduk": {
+			"post": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD PRODUK DAN STOCK (CMS)",
+				"description": "<b>Catatan :</b> \n\n - Untuk value UnixText Terdiri dari `Produk` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: Produk20220803Luj67Go1</b> \n\n - Untuk value kode_produk Terdiri dari `PRD` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: PRD-2022080397531246</b>",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"UnixText": {
+										"type": "string"
+									},
+									"id_produk": {
+										"type": "string"
+									},
+									"id_kategori_produk": {
+										"type": "string"
+									},
+									"id_measurement": {
+										"type": "string"
+									},
+									"id_update_stok": {
+										"type": "string"
+									},
+									"kode_produk": {
+										"type": "string"
+									},
+									"nama_produk": {
+										"type": "string"
+									},
+									"merek_produk": {
+										"type": "string"
+									},
+									"harga": {
+										"type": "string"
+									},
+									"stok": {
+										"type": "string"
+									},
+									"berat": {
+										"type": "string"
+									},
+									"deskripsi": {
+										"type": "string"
+									},
+									"tanggal": {
+										"type": "string"
+									},
+									"tambah_stok": {
+										"type": "string"
+									},
+									"kurang_stok": {
+										"type": "string"
+									},
+									"inputTemp": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"UnixText": "BarangLelang20220803Luj67Go1",
+										"id_produk": null,
+										"id_kategori_produk": "4",
+										"id_measurement": "1",
+										"kode_produk": "PRD-2022080397531246",
+										"nama_produk": "Sunlight Lemon",
+										"merek_produk": "Unilever",
+										"harga": "12000",
+										"stok": "1000",
+										"berat": "700 ml",
+										"deskripsi": "Ini sabun cuci piring",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"UnixText": "BarangLelang20220803Luj67Go1",
+										"id_produk": "5",
+										"id_kategori_produk": "4",
+										"id_measurement": "1",
+										"kode_produk": "PRD-2022080397531246",
+										"nama_produk": "Sunlight Lemon",
+										"merek_produk": "Unilever",
+										"harga": "12000",
+										"stok": "1000",
+										"berat": "700 ml",
+										"deskripsi": "Ini sabun cuci piring",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_produk": "5",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_produk": "5",	
+										"status_aktif": "1"	
+									}
+								},
+								"STATUSRECORDSTOK": {
+									"value": {
+										"jenis": "STATUSRECORDSTOK",	
+										"id_update_stok": "15",	
+										"status_aktif": "1"	
+									}
+								},
+								"DELETESTOK": {
+									"value": {
+										"jenis": "DELETESTOK",	
+										"id_update_stok": "15",	
+										"delete_by": "1"	
+									}
+								},
+								"ADDSTOK": {
+									"value": {
+										"jenis": "ADDSTOK",
+										"id_update_stok": null,
+										"id_produk": "5",
+										"tanggal": "2022-10-25",
+										"tambah_stok": "100",
+										"kurang_stok": "0",
+										"create_update_by": "1"
+									}
+								},
+								"EDITSTOK": {
+									"value": {
+										"jenis": "EDITSTOK",
+										"id_update_stok": "15",
+										"id_produk": "5",
+										"tanggal": "2022-10-25",
+										"tambah_stok": "100",
+										"kurang_stok": "50",
+										"create_update_by": "1"
+									}
+								},
+								"EDITSTOKONE": {
+									"value": {
+										"jenis": "EDITSTOKONE",
+										"bagian": "tambah",
+										"id_update_stok": "15",
+										"inputTemp": "50",
+										"create_update_by": "1"
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/getPromosi": {
+			"get": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Untuk Data Promosi Produk (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/postPromosi": {
+			"post": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD PROMOSI PRODUK (CMS)",
+				"description": "<b>Catatan :</b> \n\n - Untuk value UnixText Terdiri dari `Promo` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: Promo20220803Luj67Go1</b>",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_promosi": {
+										"type": "string"
+									},
+									"UnixText": {
+										"type": "string"
+									},
+									"id_produk": {
+										"type": "string"
+									},
+									"nama_promo": {
+										"type": "string"
+									},
+									"deskripsi": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"UnixText": "Promo20220803Luj67Go1",
+										"id_promosi": null,
+										"id_produk": [
+											{"id_produk": 3},
+											{"id_produk": 4}
+										],
+										"nama_promo": "Indofood Voucher 11.11",
+										"deskripsi": "hanya untuk produk dari Indofood",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"UnixText": "Promo20220803Luj67Go1",
+										"id_promosi": "4",
+										"id_produk": [
+											{"id_produk": 3},
+											{"id_produk": 4}
+										],
+										"nama_promo": "Indofood Voucher 11.11",
+										"deskripsi": "hanya untuk produk dari Indofood",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_promosi": "4",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_promosi": "4",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/getOrder": {
+			"get": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Untuk Data Order Produk (CMS)",
+				"parameters": [
+					{
+						"name": "code_status",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["0", "1", "2", "3", "4", "5"],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/ecommerce/getWishlist": {
+			"get": {
+				"tags": ["CMS E-Commerce"],
+				"summary": "Untuk Data Wishlist Produk (CMS)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/api/v1/emall/getKategoriTenant": {
+			"get": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Untuk Data Kategori Tenant (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/postKategoriTenant": {
+			"post": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD KATEGORI TENANT (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_kategori_tenant": {
+										"type": "string"
+									},
+									"kategori_tenant": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_kategori_tenant": null,
+										"kategori_tenant": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_kategori_tenant": "3",
+										"kategori_tenant": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_kategori_tenant": "3",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_kategori_tenant": "3",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/getKategoriContent": {
+			"get": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Untuk Data Kategori Content (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/postKategoriContent": {
+			"post": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD KATEGORI CONTENT (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_kategori_content": {
+										"type": "string"
+									},
+									"kategori_content": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_kategori_content": null,
+										"kategori_content": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_kategori_content": "3",
+										"kategori_content": "Kategori 3",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_kategori_content": "3",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_kategori_content": "3",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/getMall": {
+			"get": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Untuk Data Mall (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_admin",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/postMall": {
+			"post": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD MALL (CMS)",
+				"description": "<b>Catatan :</b> \n\n - Untuk value UnixText Terdiri dari `Mall` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: Mall20220803Luj67Go1</b>",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"UnixText": {
+										"type": "string"
+									},
+									"id_mall": {
+										"type": "string"
+									},
+									"id_admin": {
+										"type": "string"
+									},
+									"nama_mall": {
+										"type": "string"
+									},
+									"deskripsi": {
+										"type": "string"
+									},
+									"alamat": {
+										"type": "string"
+									},
+									"provinsi": {
+										"type": "string"
+									},
+									"kota": {
+										"type": "string"
+									},
+									"no_whatsapp": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"UnixText": "Mall20220803Luj67Go1",
+										"id_mall": null,
+										"id_admin": "2",
+										"nama_mall": "BTM Bogor",
+										"deskripsi": "tentang mall BTM Bogor",
+										"alamat": "Bogor",
+										"provinsi": "JAWA BARAT",
+										"kota": "KOTA BOGOR",
+										"no_whatsapp": "0987654321",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"UnixText": "Mall20220803Luj67Go1",
+										"id_mall": "4",
+										"id_admin": "2",
+										"nama_mall": "BTM Bogor",
+										"deskripsi": "tentang mall BTM Bogor",
+										"alamat": "Bogor",
+										"provinsi": "JAWA BARAT",
+										"kota": "KOTA BOGOR",
+										"no_whatsapp": "0987654321",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_mall": "4",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_mall": "4",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/getFasilitasMall": {
+			"get": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Untuk Data Fasilitas Mall (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_mall",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/postFasilitasMall": {
+			"post": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD FASILITAS MALL (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_fasilitas_mall": {
+										"type": "string"
+									},
+									"id_mall": {
+										"type": "string"
+									},
+									"fasilitas_mall": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"id_fasilitas_mall": null,
+										"id_mall": "3",
+										"fasilitas_mall": "Tempat Parkir",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_fasilitas_mall": "6",
+										"id_mall": "3",
+										"fasilitas_mall": "Tempat Parkir",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_fasilitas_mall": "6",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_fasilitas_mall": "6",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/getTenantMall": {
+			"get": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Untuk Data Tenant Mall (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_admin",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/getFotoTenantMall/{idTenantMall}": {
+			"get": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Untuk Data Foto Tenant Mall (CMS)",
+				"parameters": [
+					{
+						"name": "idTenantMall",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/postTenantMall": {
+			"post": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD TENANT MALL (CMS)",
+				"description": "<b>Catatan :</b> \n\n - Untuk value UnixText Terdiri dari `TenantMall` + `tahun` `bulan` `tanggal` + `8 karakter random` <b>Example: TenantMall20220803Luj67Go1</b>",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"UnixText": {
+										"type": "string"
+									},
+									"id_tenant_mall": {
+										"type": "string"
+									},
+									"id_kategori_tenant": {
+										"type": "string"
+									},
+									"id_admin": {
+										"type": "string"
+									},
+									"id_mall": {
+										"type": "string"
+									},
+									"nama_tenant_mall": {
+										"type": "string"
+									},
+									"deskripsi": {
+										"type": "string"
+									},
+									"provinsi": {
+										"type": "string"
+									},
+									"kota": {
+										"type": "string"
+									},
+									"no_whatsapp": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD": {
+									"value": {
+										"jenis": "ADD",
+										"UnixText": "TenantMall20220803Luj67Go1",
+										"id_tenant_mall": null,
+										"id_kategori_tenant": "3",
+										"id_admin": "3",
+										"id_mall": "2",
+										"nama_tenant_mall": "Es Teh Indonesia",
+										"deskripsi": "tentang Es Teh Indonesia",
+										"provinsi": "JAWA BARAT",
+										"kota": "KOTA DEPOK",
+										"no_whatsapp": "0987654321",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"UnixText": "TenantMall20220803Luj67Go1",
+										"id_tenant_mall": "5",
+										"id_kategori_tenant": "3",
+										"id_admin": "3",
+										"id_mall": "2",
+										"nama_tenant_mall": "Es Teh Indonesia",
+										"deskripsi": "tentang Es Teh Indonesia",
+										"provinsi": "JAWA BARAT",
+										"kota": "KOTA DEPOK",
+										"no_whatsapp": "0987654321",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_tenant_mall": "5",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_tenant_mall": "5",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/getContent": {
+			"get": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Untuk Data Content Mall Dan Tenant Mall (CMS)",
+				"parameters": [
+					{
+						"name": "status_aktif",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": [true, false],
+							"example": ""
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "kategori",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["mall", "tenantmall"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_kategori_content",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_mall",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_tenant_mall",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/emall/postContent": {
+			"post": {
+				"tags": ["CMS E-Mall"],
+				"summary": "Proses ADD, EDIT, DELETE, STATUSRECORD TENANT MALL (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"content": {
+										"type": "string"
+									},
+									"id_content_mall": {
+										"type": "string"
+									},
+									"id_kategori_tenant": {
+										"type": "string"
+									},
+									"id_mall": {
+										"type": "string"
+									},
+									"id_tenant_mall": {
+										"type": "string"
+									},
+									"judul_content": {
+										"type": "string"
+									},
+									"link": {
+										"type": "string"
+									},
+									"deskripsi": {
+										"type": "string"
+									},
+									"status_aktif": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"ADD - MALL": {
+									"value": {
+										"jenis": "ADD",
+										"content": "Mall",
+										"id_content_mall": null,
+										"id_kategori_tenant": "1",
+										"id_mall": "1",
+										"judul_content": "Buy 1 Get 2",
+										"link": "ini link",
+										"deskripsi": "tes deskripsi",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT - MALL": {
+									"value": {
+										"jenis": "EDIT",
+										"content": "Mall",
+										"id_content_mall": "3",
+										"id_kategori_tenant": "1",
+										"id_mall": "1",
+										"judul_content": "Buy 1 Get 2",
+										"link": "ini link",
+										"deskripsi": "tes deskripsi",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE - MALL": {
+									"value": {
+										"jenis": "DELETE",	
+										"content": "Mall",	
+										"id_content_mall": "3",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD - MALL": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"content": "Mall",	
+										"id_content_mall": "3",	
+										"status_aktif": "1"	
+									}
+								},
+								"ADD - TENANT MALL": {
+									"value": {
+										"jenis": "ADD",
+										"content": "TenantMall",
+										"id_content_mall": null,
+										"id_kategori_tenant": "1",
+										"id_tenant_mall": "1",
+										"judul_content": "Buy 1 Get 2",
+										"link": "ini link",
+										"deskripsi": "tes deskripsi",
+										"create_update_by": "1"
+									}
+								},
+								"EDIT - TENANT MALL": {
+									"value": {
+										"jenis": "EDIT",
+										"content": "TenantMall",
+										"id_content_mall": "3",
+										"id_kategori_tenant": "1",
+										"id_tenant_mall": "1",
+										"judul_content": "Buy 1 Get 2",
+										"link": "ini link",
+										"deskripsi": "tes deskripsi",
+										"create_update_by": "1"
+									}
+								},
+								"DELETE - TENANT MALL": {
+									"value": {
+										"jenis": "DELETE",	
+										"content": "TenantMall",	
+										"id_content_mall": "3",	
+										"delete_by": "1"	
+									}
+								},
+								"STATUSRECORD - TENANT MALL": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"content": "TenantMall",	
+										"id_content_mall": "3",	
+										"status_aktif": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/api/v1/settings/encryptPass": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk encrypt kata sandi",
@@ -355,7 +3536,7 @@
 				}
 			}
 		},
-		"/settings/decryptPass": {
+		"/api/v1/settings/decryptPass": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk decrypt kata sandi",
@@ -381,7 +3562,7 @@
 				}
 			}
 		},
-		"/settings/getRole": {
+		"/api/v1/settings/getRole": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Hak Akses (CMS)",
@@ -396,7 +3577,7 @@
 				}
 			}
 		},
-		"/settings/getMenu": {
+		"/api/v1/settings/getMenu": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Menu (CMS)",
@@ -422,7 +3603,7 @@
 				}
 			}
 		},
-		"/settings/getKurir": {
+		"/api/v1/settings/getKurir": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Kurir (CMS)",
@@ -448,7 +3629,7 @@
 				}
 			}
 		},
-		"/settings/getKurirService/{idKurir}": {
+		"/api/v1/settings/getKurirService/{idKurir}": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Kurir Service (CMS)",
@@ -458,6 +3639,7 @@
 						"in": "path",
 						"style": "simple",
 						"explode": false,
+						"required": true,
 						"schema": {
 							"type": "string",
 							"example": "1"
@@ -474,7 +3656,7 @@
 				}
 			}
 		},
-		"/settings/getPayment": {
+		"/api/v1/settings/getPayment": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Metode Pembayaran (CMS)",
@@ -500,7 +3682,7 @@
 				}
 			}
 		},
-		"/settings/getWilayah": {
+		"/api/v1/settings/getWilayah": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Wilayah (CMS)",
@@ -537,7 +3719,7 @@
 				}
 			}
 		},
-		"/settings/getLoggerAdmin": {
+		"/api/v1/settings/getLoggerAdmin": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Logger Admin (CMS)",
@@ -552,7 +3734,7 @@
 				}
 			}
 		},
-		"/settings/getLoggerPeserta": {
+		"/api/v1/settings/getLoggerPeserta": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Logger Peserta (CMS)",
@@ -567,11 +3749,886 @@
 				}
 			}
 		},
-		"/settings/getMeasurement": {
+		"/api/v1/settings/getMeasurement": {
 			"get": {
 				"tags": ["CMS Settings"],
 				"summary": "Untuk List Data Ukuran Bobot (CMS)",
 				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/apirest/v1/auth/login": {
+			"post": {
+				"tags": ["API Auth"],
+				"summary": "Login (API)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"example": "tes@gmail.com"	
+									},
+									"password": {
+										"type": "string",
+										"example": "tes12345"	
+									},
+									"lat": {
+										"type": "string",
+										"example": "-6.4561821"	
+									},
+									"long": {
+										"type": "string",
+										"example": "106.8532497"	
+									}
+								},
+								"required": ["email", "password", "lat", "long"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/auth/register": {
+			"post": {
+				"tags": ["API Auth"],
+				"summary": "Register (API)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"nik": {
+										"type": "string",
+										"example": "tes@gmail.com"	
+									},
+									"nama": {
+										"type": "string",
+										"example": "Tester"	
+									},
+									"email": {
+										"type": "string",
+										"example": "triyogagp.kmart@gmail.com"	
+									},
+									"password": {
+										"type": "string",
+										"example": "triyogagp12345"	
+									}
+								},
+								"required": ["nik", "nama", "email", "password"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/auth/blastEmail": {
+			"post": {
+				"tags": ["API Auth"],
+				"summary": "Email OTP (API)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"example": "triyogagp.kmart@gmail.com"	
+									},
+									"kodeOtp": {
+										"type": "string",
+										"example": "123456"	
+									}
+								},
+								"required": ["email", "kodeOtp"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/auth/forgotPass": {
+			"post": {
+				"tags": ["API Auth"],
+				"summary": "Lupa Kata Sandi (API)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"example": "triyogagp.kmart@gmail.com"	
+									}
+								},
+								"required": ["email"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/auth/updateProfile": {
+			"post": {
+				"tags": ["API Auth"],
+				"summary": "Ubah Profile (API)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"id_peserta": {
+										"type": "string",
+										"example": "5"	
+									},
+									"nama": {
+										"type": "string",
+										"example": "Tester"	
+									},
+									"email": {
+										"type": "string",
+										"example": "triyogagp.kmart@gmail.com"	
+									},
+									"no_hp": {
+										"type": "string",
+										"example": "0123456789"	
+									},
+									"alamat": {
+										"type": "string",
+										"example": "Depok"	
+									}
+								},
+								"required": ["id_peserta", "nama", "email", "no_hp", "alamat"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/auth/updateFotoProfile": {
+			"post": {
+				"tags": ["API Auth"],
+				"summary": "Ubah Foto Profile (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "number",
+										"example": "",
+										"required": true
+									},
+									"nama_folder": {
+										"type": "string",
+										"example": "",
+										"description": "untuk mengisi `nama_folder` dengan pattern Peserta + tahun-bulan-tanggal + 8 random string (angka huruf)",
+										"required": true
+									},
+									"nama_file": {
+										"type": "string",
+										"example": "",
+										"description": "untuk mengisi `nama_file` dengan pattern Peserta + foto_peserta + tahun-bulan-tanggal + 8 random string (angka huruf)",
+										"required": true
+									},
+									"jenis": {
+										"type": "string",
+										"example": "image",
+										"required": true
+									},
+									"bagian": {
+										"type": "string",
+										"example": "berkas",
+										"required": true
+									},
+									"file": {
+										"type": "file",
+										"format": "binary",
+										"required": true
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/auth/getProfile/{idPeserta}": {
+			"get": {
+				"tags": ["API Auth"],
+				"summary": "Profile Peserta (API)",
+				"parameters": [
+					{
+						"name": "idPeserta",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "1"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/auth/getAddress/{idPeserta}": {
+			"get": {
+				"tags": ["API Auth"],
+				"summary": "Address Peserta (API)",
+				"parameters": [
+					{
+						"name": "idPeserta",
+						"in": "path",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": "1"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/apirest/v1/lelang/getKategoriLelang": {
+			"get": {
+				"tags": ["API Lelang"],
+				"summary": "Untuk Data Kategori Lelang (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/lelang/getBarangLelang": {
+			"get": {
+				"tags": ["API Lelang"],
+				"summary": "Untuk Data Barang Lelang (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_kategori",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "keyword",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_barang_lelang",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/lelang/getEventLelang": {
+			"get": {
+				"tags": ["API Lelang"],
+				"summary": "Untuk Data Event Lelang (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "keyword",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/lelang/getLotLelang": {
+			"get": {
+				"tags": ["API Lelang"],
+				"summary": "Untuk Data LOT Barang Lelang (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_kategori",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "keyword",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_event",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_barang_lelang",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/lelang/getPembelianNPL": {
+			"get": {
+				"tags": ["API Lelang"],
+				"summary": "Untuk Data Pembelian NPL (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/lelang/postPembelianNPL": {
+			"post": {
+				"tags": ["API Lelang"],
+				"summary": "Pembelian NPL (API)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"multipart/form-data": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"id_peserta": {
+										"type": "number",
+										"example": "1",
+										"required": true
+									},
+									"id_event": {
+										"type": "number",
+										"example": "2",
+										"required": true
+									},
+									"nominal": {
+										"type": "string",
+										"example": "2000000",
+										"required": true
+									},
+									"tanggal_transfer": {
+										"type": "string",
+										"example": "2022-10-25",
+										"required": true
+									},
+									"nama_folder": {
+										"type": "string",
+										"example": "",
+										"description": "untuk mengisi `nama_folder` dengan pattern Peserta + tahun-bulan-tanggal + 8 random string (angka huruf)",
+										"required": true
+									},
+									"nama_file": {
+										"type": "string",
+										"example": "",
+										"description": "untuk mengisi `nama_file` dengan pattern Bukti + tahun-bulan-tanggal + 8 random string (angka huruf)",
+										"required": true
+									},
+									"jenis": {
+										"type": "string",
+										"example": "image",
+										"required": true
+									},
+									"bagian": {
+										"type": "string",
+										"example": "berkas",
+										"required": true
+									},
+									"file": {
+										"type": "file",
+										"format": "binary",
+										"required": true
+									}
+								}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+
+		"/apirest/v1/ecommerce/getKategoriProduk": {
+			"get": {
+				"tags": ["API E-Commerce"],
+				"summary": "Untuk Data Kategori Produk (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/ecommerce/getProduk": {
+			"get": {
+				"tags": ["API E-Commerce"],
+				"summary": "Untuk Data Produk (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_kategori",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "keyword",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_produk",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/ecommerce/getPromosi": {
+			"get": {
+				"tags": ["API E-Commerce"],
+				"summary": "Untuk Data Promosi Produk (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "keyword",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_promosi",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/ecommerce/getWishlist": {
+			"get": {
+				"tags": ["API E-Commerce"],
+				"summary": "Untuk Data Wishlist Produk (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "keyword",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
+						"name": "id_produk",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/emall/postWishlist": {
+			"post": {
+				"tags": ["API E-Commerce"],
+				"summary": "Proses WISH, UNWISH WISHLIST (API)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_wishlist": {
+										"type": "string"
+									},
+									"id_peserta": {
+										"type": "string"
+									},
+									"id_produk": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"WISH": {
+									"value": {
+										"jenis": "WISH",
+										"id_wishlist": null,
+										"id_peserta": "2",
+										"id_produk": "1"
+									}
+								},
+								"UNWISH": {
+									"value": {
+										"jenis": "UNWISH",
+										"id_wishlist": "4",
+										"id_peserta": "2"
+									}
+								}
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "Berhasil"

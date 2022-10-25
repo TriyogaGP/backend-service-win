@@ -184,6 +184,7 @@ function crudBarangLelang (models) {
 					UnixText: body.UnixText,
 					idKategori: body.id_kategori,
 					namaBarangLelang: body.nama_barang_lelang,
+					namaPemilik: body.nama_pemilik,
 					brand: body.brand,
 					warna: body.warna,
 					tahun: body.tahun,
@@ -219,6 +220,7 @@ function crudBarangLelang (models) {
 					UnixText: body.UnixText,
 					idKategori: body.id_kategori,
 					namaBarangLelang: body.nama_barang_lelang,
+					namaPemilik: body.nama_pemilik,
 					brand: body.brand,
 					warna: body.warna,
 					tahun: body.tahun,
@@ -825,7 +827,7 @@ function getRoomEvent (models) {
 				],
 				order
 			});
-
+	
 			return OK(res, await _buildResponseRoom(models, dataLot));
     } catch (err) {
 			return NOT_FOUND(res, err.message)

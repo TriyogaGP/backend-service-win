@@ -12,7 +12,7 @@ const BASE_URL = process.env.BASE_URL
 
 function getAdmin (models) {
   return async (req, res, next) => {
-		let { status_aktif, level, sort } = req.query
+		let { status_aktif, id_admin, level, sort } = req.query
 		let where = {}
 		let order = []
     try {
@@ -22,6 +22,12 @@ function getAdmin (models) {
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 				
+			}
+			if(id_admin) { 
+				where = {
+					idAdmin: id_admin,
+					statusAktif: true
+				}
 			}
 			if(level) { 
 				where = {
@@ -139,20 +145,18 @@ function getPeserta (models) {
 		let where = {}
 		let order = []
     try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
 			if(id_peserta) { 
 				where = {
 					idPeserta: id_peserta,
 					statusAktif: true
 				}
-				order = [
-					['createdAt', sort ? sort : 'ASC'],
-				]
 			}
       dataProfile = await models.User.findAll({
 				where,
