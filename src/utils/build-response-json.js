@@ -479,6 +479,7 @@ async function _buildResponseProduk(models, dataProduk) {
 			berat: val.berat,
 			point: val.point,
 			deskripsi: val.deskripsi,
+			coverImage: val.coverImage,
 			UnixText: val.UnixText,
 			statusAktif: val.statusAktif,
 			sisaStok: sisaStok ? sisaStok : 0,
@@ -569,6 +570,7 @@ async function _buildResponseDetailProduk(models, dataProduk) {
 			berat: val.berat,
 			point: val.point,
 			deskripsi: val.deskripsi,
+			coverImage: val.coverImage,
 			UnixText: val.UnixText,
 			statusAktif: val.statusAktif,
 			sisaStok: sisaStok ? sisaStok : 0,
@@ -618,6 +620,39 @@ async function _buildResponseWishlist(models, dataWishlist) {
 			merekProduk: val.Produk.merekProduk,
 			namaProduk: val.Produk.namaProduk,
 			berat: val.Produk.berat,
+			coverImage: val.Produk.coverImage,
+			createdAt: convertDateTime(val.createdAt),
+			dataFotoProduk: dataKumpul,
+		}
+	})
+}
+
+async function _buildResponseKeranjang(models, dataKeranjang) {
+	const dataFotoProduk = await models.FotoProduk.findAll({
+		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+	});
+
+	let dataKumpul = []
+	return dataKeranjang.map(val => {
+		dataKumpul = dataFotoProduk
+		.filter(barleng => barleng.idProduk === val.idProduk)
+		.map(val2 => {
+			let objectBaru = Object.assign(val2, {
+				gambar: BASE_URL+'image/produk/'+val2.gambar
+			});
+			return objectBaru
+		})
+
+		return {
+			idKeranjang: val.idKeranjang,
+			idPeserta: val.idPeserta,
+			idProduk: val.idProduk,
+			qty: val.qty,
+			kodeProduk: val.Produk.kodeProduk,
+			merekProduk: val.Produk.merekProduk,
+			namaProduk: val.Produk.namaProduk,
+			berat: val.Produk.berat,
+			coverImage: val.Produk.coverImage,
 			createdAt: convertDateTime(val.createdAt),
 			dataFotoProduk: dataKumpul,
 		}
@@ -635,4 +670,5 @@ module.exports = {
   _buildResponseDetailProduk,
   _buildResponsePromosi,
   _buildResponseWishlist,
+  _buildResponseKeranjang,
 }

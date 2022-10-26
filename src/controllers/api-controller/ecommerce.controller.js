@@ -1,5 +1,5 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../../utils/response.utils');
-const { _buildResponseProduk, _buildResponseDetailProduk, _buildResponsePromosi, _buildResponseWishlist } = require('../../utils/build-response-json');
+const { _buildResponseProduk, _buildResponseDetailProduk, _buildResponsePromosi, _buildResponseWishlist, _buildResponseKeranjang } = require('../../utils/build-response-json');
 const { encrypt, decrypt, convertDate } = require('../../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
@@ -254,10 +254,46 @@ function crudWishlist (models) {
   }  
 }
 
+function getCart (models) {
+	return async (req, res, next) => {
+		let { id_peserta, sort } = req.query
+		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+		let where = {}
+	  let order = []
+	  try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+			if(id_peserta){
+				where.idPeserta = id_peserta
+			}
+			const dataKeranjang = await models.Keranjang.findAll({
+				where,
+				include: [
+					{
+						model: models.User,
+						attributes
+					},
+					{
+						model: models.Produk,
+						attributes
+					},
+				],
+				order
+			});
+
+			return OK(res, await _buildResponseKeranjang(models, dataKeranjang));
+	  } catch (err) {
+			return NOT_FOUND(res, err.message)
+	  }
+	}  
+}
+
 module.exports = {
   getKategoriProduk,
   getProduk,
   getPromosi,
   getWishlist,
   crudWishlist,
+  getCart,
 }

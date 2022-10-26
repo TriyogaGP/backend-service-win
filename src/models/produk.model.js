@@ -61,6 +61,11 @@ const ProdukScheme = Sequelize => {
       allowNull: true,
       field: 'deskripsi',
     },
+    coverImage: {
+      type: DataTypes.STRING(256),
+      allowNull: true,
+      field: 'cover_image',
+    },
     UnixText: {
       type: DataTypes.STRING(256),
       allowNull: true,

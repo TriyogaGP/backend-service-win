@@ -231,6 +231,7 @@ async function _buildResponseProduk(models, dataProduk) {
 			point: val.point,
 			deskripsi: val.deskripsi,
 			UnixText: val.UnixText,
+			coverImage: val.coverImage,
 			statusAktif: val.statusAktif,
 			sisaStok: sisaStok ? sisaStok : 0,
 			rateProduk: rateProduk ? rateProduk : 0,
@@ -594,6 +595,7 @@ async function _buildResponseWishlist(models, dataWishlist) {
 			merekProduk: val.Produk.merekProduk,
 			namaProduk: val.Produk.namaProduk,
 			berat: val.Produk.berat,
+			coverImage: val.Produk.coverImage,
 			createdAt: convertDateTime(val.createdAt),
 			dataFotoProduk: dataKumpul,
 		}

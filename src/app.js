@@ -51,7 +51,7 @@ try {
   app.use('/apirest/v1/ecommerce', verifyToken, ecommerceApi(models));
   //cms
   app.use('/api/v1/auth', auth(models));
-  app.use('/api/v1/settings', verifyToken, settings(models));
+  app.use('/api/v1/settings', settings(models));
   app.use('/api/v1/admin', verifyToken, admin(models));
   app.use('/api/v1/lelang', verifyToken, lelang(models));
   app.use('/api/v1/ecommerce', verifyToken, ecommerce(models));
@@ -75,10 +75,24 @@ try {
     getUserData,
     userLeave,
     getDataLot,
+
+    userJoinTesting,
+    clearUsers,
   } = require("./utils/socketIO-utils");
 
   io.on("connection", (socket) => {
     console.log(`Socket.IO connected ${socket.id}`);
+    socket.on("join-testing", async ({ room, nama }) => {
+      const user = await userJoinTesting(socket.id, room, nama);
+      socket.join(user.room);
+      io.to(user.room).emit("UsersData", user);
+    });
+
+    socket.on("clear", async ({ room }) => {
+      const user = await clearUsers(room);
+      io.emit("clear", user);
+    });
+
     socket.on("join", async ({ room, id_peserta, id_event, is_admin, device }) => {
       const joinUser = await userJoin(socket.id, room, id_peserta, id_event, is_admin, device);
       const getUser = await getCurrentUser(joinUser);

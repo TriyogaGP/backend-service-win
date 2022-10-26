@@ -26,11 +26,11 @@ function updateFile (models) {
 				{ fotoPeserta: body.nama_folder+'/'+body.namaFile }
 				whereBy = body.proses == 'ADD' ? { nik: body.nik } : { idPeserta: body.id }
 				await models.User.update(kirimdata, { where: whereBy })
-			}else if(body.table == 't_event'){ //untuk User Event
+			}else if(body.table == 't_event'){ //untuk Event
 				kirimdata = { gambar: body.nama_folder+'/'+body.namaFile }
 				whereBy = body.proses == 'ADD' ? { kodeEvent: body.kode_event, namaEvent: body.nama_event } : { idEvent: body.id }
 				await models.Event.update(kirimdata, { where: whereBy })
-			}else if(body.table == 'm_barang_lelang'){
+			}else if(body.table == 'm_barang_lelang'){ // untuk Barang Lelang
 				let splitData = body.nama_file.split('-')
 				kirimdata = splitData[1] == 'stnk' ? { stnk: body.nama_folder+'/'+body.namaFile } : 
 					splitData[1] == 'bpkb' ? { bpkb: body.nama_folder+'/'+body.namaFile } : 
@@ -39,7 +39,7 @@ function updateFile (models) {
 					splitData[1] == 'kwitansi' ? { kwitansi: body.nama_folder+'/'+body.namaFile } : ''
 				whereBy = body.proses == 'ADD' ? { namaBarangLelang: body.nama_barang_lelang } : { idBarangLelang: body.id }
 				await models.BarangLelang.update(kirimdata, { where: whereBy })
-			}else if(body.table == 'm_foto_barang_lelang'){
+			}else if(body.table == 'm_foto_barang_lelang'){ //untuk Foto Barang Lelang
 				kirimdata = { 
 					idBarangLelang: body.id,
 					title: body.title,
@@ -48,40 +48,44 @@ function updateFile (models) {
 					statusAktif: 1
 				}
 				await models.FotoBarangLelang.create(kirimdata)
-			}else if(body.table == 'm_foto_produk'){
+			}else if(body.table == 'm_produk'){ //untuk Produk
+				kirimdata = { coverImage: body.nama_folder+'/'+body.namaFile }
+				whereBy = body.proses == 'ADD' ? { kodeProduk: body.kode_produk } : { idProduk: body.id }
+				await models.Produk.update(kirimdata, { where: whereBy })	
+			}else if(body.table == 'm_foto_produk'){ //untuk Foto Produk
 				kirimdata = { idProduk: body.id, gambar: body.nama_folder+'/'+body.namaFile, statusAktif: 1 }
 				await models.FotoProduk.create(kirimdata)
-			}else if(body.table == 'm_foto_tenant_mall'){
+			}else if(body.table == 'm_foto_tenant_mall'){ //untuk Foto Tenant Mall
 				kirimdata = { idTenantMall: body.id, gambar: body.nama_folder+'/'+body.namaFile, statusAktif: 1 }
 				await models.FotoTenantMall.create(kirimdata)
-			}else if(body.table == 't_pembelian_npl'){
+			}else if(body.table == 't_pembelian_npl'){ //untuk Pembelian NPL
 				kirimdata = { bukti: body.nama_folder+'/'+body.namaFile }
 				whereBy = { idPembelianNPL: body.id }
 				await models.PembelianNPL.update(kirimdata, { where: whereBy })
-			}else if(body.table == 't_refund_npl'){
+			}else if(body.table == 't_refund_npl'){ //untuk Refund NPL
 				kirimdata = { idNpl: body.id, bukti: body.nama_folder+'/'+body.namaFile, status_refund: 1, createBy: body.create_update_by }
 				await models.RefundNPL.create(kirimdata)
-			}else if(body.table == 't_promosi'){
+			}else if(body.table == 't_promosi'){ //untuk Promosi
 				kirimdata = { gambar: body.nama_folder+'/'+body.namaFile }
 				whereBy = body.proses == 'ADD' ? { namaPromo: body.nama_promo } : { idPromosi: body.id }
 				await models.Promosi.update(kirimdata, { where: whereBy })
-			}else if(body.table == 'm_mall'){
+			}else if(body.table == 'm_mall'){ //untuk Mall
 				kirimdata = { logo: body.nama_folder+'/'+body.namaFile }
 				whereBy = body.proses == 'ADD' ? { namaMall: body.nama_mall } : { idMall: body.id }
 				await models.Mall.update(kirimdata, { where: whereBy })
-			}else if(body.table == 't_tenant_mall'){
+			}else if(body.table == 't_tenant_mall'){ //untuk Tenant Mall
 				kirimdata = { logo: body.nama_folder+'/'+body.namaFile }
 				whereBy = body.proses == 'ADD' ? { namaTenantMall: body.nama_tenant_mall } : { idTenantMall: body.id }
 				await models.TenantMall.update(kirimdata, { where: whereBy })
-			}else if(body.table == 't_content_mall'){
+			}else if(body.table == 't_content_mall'){ //untuk Content Mall
 				kirimdata = { foto: body.nama_folder+'/'+body.namaFile }
 				whereBy = body.proses == 'ADD' ? { judulContent: body.judul_content } : { idContentMall: body.id }
 				await models.ContentMall.update(kirimdata, { where: whereBy })
-			}else if(body.table == 't_content_tenant_mall'){
+			}else if(body.table == 't_content_tenant_mall'){ //untuk Content Tenant Mall
 				kirimdata = { foto: body.nama_folder+'/'+body.namaFile }
 				whereBy = body.proses == 'ADD' ? { judulContent: body.judul_content } : { idContentTenantMall: body.id }
 				await models.ContentTenantMall.update(kirimdata, { where: whereBy })
-			}else if(body.table == 't_pemenang_lelang'){
+			}else if(body.table == 't_pemenang_lelang'){ //untuk Pemenang Lelang
 				kirimdata = { bukti: body.namaFile }
 				whereBy = { idPemenangLelang: body.id }
 			}
@@ -179,6 +183,43 @@ function getMenu (models) {
 			});
 
 			return OK(res, await _buildResponseMenu(dataMenu));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function postMenu (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+    try {
+			let kirimdata;
+			if(body.jenis == 'EDIT'){
+				if(await models.Menu.findOne({where: {[Op.not]: [{menuText: body.menu_text, menuRoute: body.menu_route}], [Op.not]: [{idMenu: body.id_menu}]}})) return NOT_FOUND(res, 'Menu Label sudah di gunakan !')
+				kirimdata = {
+					idRole: body.id_role,
+					menuText: body.menu_text,
+					menuRoute: body.menu_route,
+					menuIcon: body.menu_icon,
+					position: body.position,
+					status: 1,
+				}
+				await models.Menu.update(kirimdata, { where: { idMenu: body.id_menu } })
+			}else if(body.jenis == 'DELETE'){
+				kirimdata = {
+					status: 0,
+				}
+				await models.Menu.update(kirimdata, { where: { idMenu: body.id_menu } })	
+			}else if(body.jenis == 'STATUSRECORD'){
+				kirimdata = { 
+					status: body.status, 
+				}
+				await models.Menu.update(kirimdata, { where: { idMenu: body.id_menu } })
+			}else{
+				return NOT_FOUND(res, 'terjadi kesalahan pada sistem !')
+			}
+
+			return OK(res);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -349,6 +390,7 @@ module.exports = {
   getDecrypt,
   getRole,
   getMenu,
+  postMenu,
   getKurir,
   getKurirServiceBy,
   getPayment,

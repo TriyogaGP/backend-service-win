@@ -5,6 +5,7 @@ const {
     getPromosi,
     getWishlist,
     crudWishlist,
+    getCart,
 } = require('../../controllers/api-controller/ecommerce.controller')
 const { uploadFile } = require('../../middleware/uploadFile')
 
@@ -16,6 +17,7 @@ module.exports = models => {
   route.route('/getPromosi').get(getPromosi(models))
   route.route('/getWishlist').get(getWishlist(models))
   route.route('/postWishlist').post(crudWishlist(models))
+  route.route('/getCart').get(getCart(models))
   
   return route;
 }

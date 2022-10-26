@@ -6,6 +6,7 @@ const {
   getDecrypt,
   getRole,
   getMenu,
+  postMenu,
   getKurir,
   getKurirServiceBy,
   getPayment,
@@ -16,6 +17,7 @@ const {
 } = require('../controllers/settings.controler')
 const { uploadFile } = require('../middleware/uploadFile')
 const { uploadBerkas } = require('../middleware/uploadBerkas')
+const { verifyToken } = require('../middleware/VerifyToken');
 
 module.exports = models => {
   const route = Router();
@@ -23,15 +25,16 @@ module.exports = models => {
   route.route('/updateBerkas').post(uploadBerkas, updateBerkas(models))
   route.route('/encryptPass').get(getEncrypt())
   route.route('/decryptPass').get(getDecrypt())
-  route.route('/getRole').get(getRole(models))
-  route.route('/getMenu').get(getMenu(models))
-  route.route('/getKurir').get(getKurir(models))
-  route.route('/getKurirService/:idKurir').get(getKurirServiceBy(models))
-  route.route('/getPayment').get(getPayment(models))
-  route.route('/getWilayah').get(getWilayah(models))
-  route.route('/getLoggerAdmin').get(getLoggerAdmin(models))
-  route.route('/getLoggerPeserta').get(getLoggerPeserta(models))
-  route.route('/getMeasurement').get(getMeasurement(models))
+  route.route('/getRole').get(verifyToken, getRole(models))
+  route.route('/getMenu').get(verifyToken, getMenu(models))
+  route.route('/postMenu').post(verifyToken, postMenu(models))
+  route.route('/getKurir').get(verifyToken, getKurir(models))
+  route.route('/getKurirService/:idKurir').get(verifyToken, getKurirServiceBy(models))
+  route.route('/getPayment').get(verifyToken, getPayment(models))
+  route.route('/getWilayah').get(verifyToken, getWilayah(models))
+  route.route('/getLoggerAdmin').get(verifyToken, getLoggerAdmin(models))
+  route.route('/getLoggerPeserta').get(verifyToken, getLoggerPeserta(models))
+  route.route('/getMeasurement').get(verifyToken, getMeasurement(models))
   
   return route;
 }

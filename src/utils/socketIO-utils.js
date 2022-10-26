@@ -328,6 +328,23 @@ const getDataLot = async (idLot) => {
   }
 };
 
+// Testing
+const users = [] 
+const userJoinTesting = async (id, room, nama) => {
+	const user = { id, room, nama };
+  users.push(user);
+  return users;
+};
+
+const clearUsers = async (room) => {
+  const indexOfObject = users.findIndex(val => {
+    return val.room === room
+  })
+  users.splice(indexOfObject, 1);
+	return users;
+};
+
+
 module.exports = {
   userJoin,
   getCurrentUser,
@@ -343,4 +360,7 @@ module.exports = {
   getUserData,
   userLeave,
   getDataLot,
+
+  userJoinTesting,
+  clearUsers,
 };

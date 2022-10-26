@@ -218,6 +218,18 @@ function getDashboard (models) {
 						jmlProduk,
 						jmlPromosi,
 					});
+				}else if(id_role == 5){
+					//Lelang
+					let jmlEvent = await models.Event.count();
+					let jmlBarangLelang = await models.BarangLelang.count();
+					let jmlLot = await models.LOT.count();
+					let jmlPembelianNPL = await models.PembelianNPL.count();
+					return OK(res, {
+						jmlEvent,
+						jmlBarangLelang,
+						jmlLot,
+						jmlPembelianNPL,
+					});
 				}
 			}
 			OK(res, null, 'param tidak lengkap !');

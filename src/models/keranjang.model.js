@@ -21,11 +21,11 @@ const KeranjangScheme = Sequelize => {
       allowNull: false,
       field: 'id_peserta'
     },
-    jumlah: {
+    qty: {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: 0,
-      field: 'jumlah'
+      field: 'qty'
     },
     createdAt: {
       type: DataTypes.DATE,

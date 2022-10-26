@@ -6,12 +6,12 @@ const storage = multer.diskStorage({
     destination: (req, file, callBack) => {
         const { body } = req;
         const { jenis, bagian, nama, nama_file, nama_folder } = body
-        if(bagian == 'berkas' || bagian == 'event' || bagian == 'barang_lelang' || bagian == 'foto_barang_lelang' || bagian == 'foto_produk' || bagian == 'foto_tenant_mall' || 
-            bagian == 'promo' || bagian == 'mall' || bagian == 'bukti_pemenang') {
+        if(bagian == 'berkas' || bagian == 'event' || bagian == 'barang_lelang' || bagian == 'foto_barang_lelang' || bagian == 'produk' || bagian == 'foto_produk' ||
+            bagian == 'foto_tenant_mall' || bagian == 'promo' || bagian == 'mall' || bagian == 'bukti_pemenang') {
             const path_dir = bagian == 'berkas' ? path.join(__dirname, '../public/image/berkas/' + nama_folder) : 
                     bagian == 'event' ? path.join(__dirname, '../public/image/event/' + nama_folder) :
                     bagian == 'barang_lelang' || bagian == 'foto_barang_lelang' ? path.join(__dirname, '../public/image/kelengkapan-barang-lelang/' + nama_folder) :
-                    bagian == 'foto_produk' ? path.join(__dirname, '../public/image/produk/' + nama_folder) :
+                    bagian == 'produk' || bagian == 'foto_produk' ? path.join(__dirname, '../public/image/produk/' + nama_folder) :
                     bagian == 'promo' ? path.join(__dirname, '../public/image/promo/' + nama_folder) :
                     bagian == 'mall' || bagian == 'foto_tenant_mall' ? path.join(__dirname, '../public/image/mall/' + nama_folder) :
                     bagian == 'bukti_pemenang' ? path.join(__dirname, '../public/image/' + nama_folder) : '' ;
@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
     filename: (req, file, callBack) => {
         const { body } = req;
         const { jenis, bagian, nama, nama_file, nama_folder } = body
-        if(bagian == 'berkas' || bagian == 'event' || bagian == 'barang_lelang' || bagian == 'promo' || bagian == 'mall' || bagian == 'bukti_pemenang') {
+        if(bagian == 'berkas' || bagian == 'event' || bagian == 'barang_lelang' || bagian == 'produk' || bagian == 'promo' || bagian == 'mall' || bagian == 'bukti_pemenang') {
             let extension = file.mimetype.split('/')
             callBack(null, nama_file + '.' + extension[1])
         }else{

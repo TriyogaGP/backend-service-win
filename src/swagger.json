@@ -4638,6 +4638,44 @@
 					}
 				}
 			}
+		},
+		"/apirest/v1/ecommerce/getCart": {
+			"get": {
+				"tags": ["API E-Commerce"],
+				"summary": "Untuk Data Cart Produk (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
 		}
 	}
 }
