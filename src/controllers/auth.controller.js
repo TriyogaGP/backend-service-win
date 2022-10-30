@@ -159,13 +159,10 @@ function forgotPass (models) {
 			if(!data){ return NOT_FOUND(res, 'data tidak di temukan !') }
 
 			let transporter = nodemailer.createTransport({
-				// host: 'smtp.gmail.com',
-				// port: 587,
-				// secure: false, // true for 465, false for other ports
 				service: 'gmail',
 				auth: {
 					user: 'triyoga.ginanjar.p@gmail.com',
-					pass: 'tarabtjmvwwkvpby' //YD070420yd@
+					pass: 'edyqlenfqxgtmeat' //26122020CBN
 				}
 			});
 
