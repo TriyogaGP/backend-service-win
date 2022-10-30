@@ -2,6 +2,7 @@ const { Router } = require('express');
 const {
   loginAdmin,
   loginPeserta,
+  forgotPass,
   getProfile,
   getAddress,
   getDashboard,
@@ -13,6 +14,7 @@ module.exports = models => {
 
   route.route('/loginAdmin').post(loginAdmin(models))
   route.route('/loginPeserta').post(loginPeserta(models))
+  route.route('/forgotPass').post(forgotPass(models))
   route.route('/getProfile').get(getProfile(models))
   route.route('/getAddress/:idLogin').get(getAddress(models))
   route.route('/getDashboard').get(getDashboard(models))

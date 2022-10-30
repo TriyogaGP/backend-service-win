@@ -169,6 +169,42 @@
 				}
 			}
 		},
+		"/api/v1/auth/forgotPass": {
+			"post": {
+				"tags": ["CMS Auth"],
+				"summary": "Lupa Kata Sandi (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"email": {
+										"type": "string",
+										"example": "triyogagp.kmart@gmail.com"	
+									},
+									"content": {
+										"type": "enum",
+										"enum": ["Admin", "Peserta"],
+										"example": ""
+									}
+								},
+								"required": ["email"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
 		"/api/v1/auth/getProfile": {
 			"get": {
 				"tags": ["CMS Auth"],
@@ -3593,6 +3629,85 @@
 						}
 					}
 				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/api/v1/settings/postMenu": {
+			"post": {
+				"tags": ["CMS Settings"],
+				"summary": "Proses EDIT, DELETE, STATUSRECORD MENU (CMS)",
+				"parameters": [],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"jenis": {
+										"type": "string"
+									},
+									"id_menu": {
+										"type": "string"
+									},
+									"id_role": {
+										"type": "string"
+									},
+									"menu_text": {
+										"type": "string"
+									},
+									"menu_route": {
+										"type": "string"
+									},
+									"menu_icon": {
+										"type": "string"
+									},
+									"position": {
+										"type": "string"
+									},
+									"status": {
+										"type": "string"
+									},
+									"create_update_by": {
+										"type": "string"
+									}
+								}
+							},
+							"examples": {
+								"EDIT": {
+									"value": {
+										"jenis": "EDIT",
+										"id_menu": "39",
+										"id_role": "1",
+										"menu_text": "Menu Admin",
+										"menu_route": "/MenuAdmin",
+										"menu_icon": "person",
+										"position": "11"
+									}
+								},
+								"DELETE": {
+									"value": {
+										"jenis": "DELETE",	
+										"id_menu": "39"	
+									}
+								},
+								"STATUSRECORD": {
+									"value": {
+										"jenis": "STATUSRECORD",	
+										"id_menu": "39",	
+										"status": "1"	
+									}
+								}
+							}
+						}
+					}
+				},
 				"responses": {
 					"200": {
 						"description": "Berhasil"

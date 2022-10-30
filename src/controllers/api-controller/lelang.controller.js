@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const _ = require('lodash');
+const { logger } = require('../../configs/db.winston')
 const nodeGeocoder = require('node-geocoder');
 const dotenv = require('dotenv');
 dotenv.config();

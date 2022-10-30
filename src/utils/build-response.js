@@ -418,7 +418,7 @@ async function _buildResponsePemenang(models, dataPemenang) {
 		if(val.Bidding.isAdmin == true){
 			dataUser = getAdmin.filter(value => value.idAdmin === val.Bidding.idNpl)[0]
 		}else if(val.Bidding.isAdmin == false){
-			dataUser = getUser.filter(value => value.idPeserta === val.Bidding.idNpl)[0]
+			dataUser = getUser.filter(value => value.idPeserta === val.Bidding.NPL.idPeserta)[0]
 		}
 		// let dataUser = Object.assign(val.Bidding.NPL.User, {
 		// 	fotoPeserta: val.Bidding.NPL.User.fotoPeserta,
@@ -706,10 +706,10 @@ async function _buildResponseRoom(models, dataLot) {
 
 	let dataBarLel = {
 		...dataLot.BarangLelang.dataValues, 
-		KategoriLelang: {
-			namaKategori: dataLot.BarangLelang.dataValues.KategoriLelang.kategori, 
-			statusKategoriLelang: dataLot.BarangLelang.dataValues.KategoriLelang.statusAktif 
-		}
+		namaKategori: dataLot.BarangLelang.dataValues.KategoriLelang.kategori, 
+		statusKategoriLelang: dataLot.BarangLelang.dataValues.KategoriLelang.statusAktif 
+		// KategoriLelang: {
+		// }
 	};
 
 	let dataEvent = {

@@ -5,6 +5,7 @@ const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const { logger } = require('../configs/db.winston')
 const nodeGeocoder = require('node-geocoder');
 const dotenv = require('dotenv');
 dotenv.config();

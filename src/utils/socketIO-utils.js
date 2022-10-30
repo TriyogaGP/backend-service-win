@@ -117,7 +117,7 @@ const userJoinBidding = async (id, room, id_peserta, id_event, id_npl, id_lot, i
     let lot = {
       statusLot: 3,
       // expiredAt: dayjs().add(2, 'minute').toDate()
-      expiredAt: dayjs().add(10, 'second').toDate()
+      // expiredAt: dayjs().add(10, 'second').toDate()
     }
     await models.LOT.update(lot, {where: { noLot: room.split('_')[0] }});
   }
@@ -189,6 +189,14 @@ const getCurrentUserBidding = async (user) => {
     statusNPL: getNPL.statusNPL,
   }
 };
+
+const getUpdateLot = async (id_lot) => {
+  let lot = {
+    expiredAt: dayjs().add(10, 'second').toDate()
+    // expiredAt: dayjs().add(2, 'minute').toDate()
+  }
+  await models.LOT.update(lot, {where: { idLot: id_lot }});
+}
 
 const getUserBidding = async (id_lot) => {
 	let hasil = 0
@@ -322,7 +330,7 @@ const userLeave = async (id) => {
 const getDataLot = async (idLot) => {
 	const getData = await models.LOT.findOne({where: { idLot: idLot }})
   if(getData){
-		return getData
+		return getData.dataValues
   }else{
     return null
   }
@@ -352,6 +360,7 @@ module.exports = {
   getMassageRoom,
   userJoinBidding,
   getCurrentUserBidding,
+  getUpdateLot,
   getUserBidding,
   setUserBidding,
   setUserPemenang,

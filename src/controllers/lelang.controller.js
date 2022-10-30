@@ -6,6 +6,7 @@ const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const _ = require('lodash');
+const { logger } = require('../configs/db.winston')
 const nodeGeocoder = require('node-geocoder');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -509,14 +510,10 @@ function getNPL (models) {
 				where.statusAktif = status_aktif 
 			}
 			if(id_event) { 
-				where = {
-					idEvent: id_event,
-				}
+				where.idEvent= id_event
 			}
 			if(id_peserta) { 
-				where = {
-					idPeserta: id_peserta,
-				}
+				where.idPeserta = id_peserta
 			}
       const dataPembelianNPL = await models.PembelianNPL.findAll({
 				where,
@@ -701,6 +698,7 @@ function getPemenang (models) {
 			});
 
 			return OK(res, await _buildResponsePemenang(models, dataPemenang));
+			// return OK(res, dataPemenang);
 	  } catch (err) {
 			return NOT_FOUND(res, err.message)
 	  }

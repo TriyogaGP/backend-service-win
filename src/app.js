@@ -67,6 +67,7 @@ try {
     getMassageRoom,
     userJoinBidding,
     getCurrentUserBidding,
+    getUpdateLot,
     getUserBidding,
     setUserBidding,
     setUserPemenang,
@@ -99,7 +100,7 @@ try {
       socket.join(getUser.room);
       // console.log(getUser)
       io.to(getUser.room).emit('message', { pesan: `${getUser.isAdmin == 1 && 'Admin'} ${getUser.nama} masuk room dengan no ID ${getUser.idUser}`, id: getUser.idUser, data: getUser });
-      const getUserAll = await getUsersData(getUser.room);
+      const getUserAll = await getUsersData(socket.id);
       io.to(getUser.room).emit("UserAll", getUserAll);
       const getMessage = await getMassageRoom(getUser.room);
       io.to(getUser.room).emit("MessageRoomAll", getMessage);
@@ -113,13 +114,19 @@ try {
         io.to(getUser.room).emit('join-message', `Admin buat room dengan nama ${room}`);
       }else{
         io.to(getUser.room).emit('join-message', `${getUser.nama} masuk room dengan no ID ${getUser.idUser}`);
+        // const getLot = await getDataLot(id_lot);
+        // io.to(getUser.room).emit('hitung-mundur', getLot);
       }
-      const getLot = await getDataLot(getUser.idLot);
-      io.to(getUser.room).emit('lot-data', getLot);
       const getUserBid = await getUserBidding(getUser.idLot);
       io.to(getUser.room).emit("bid", { dataBid: getUserBid });
     });
   
+    socket.on("hitung-mundur", async ({ room, id_lot }) => {
+      await getUpdateLot(id_lot);
+      const getLot = await getDataLot(id_lot);
+      io.emit('hitung-mundur', getLot);
+    })
+
     socket.on("bid", async ({ room, id_npl, id_lot, harga_bidding, is_admin }) => {
       const bidding = await setUserBidding(id_npl, id_lot, harga_bidding, is_admin);
       // io.to(room).emit("trigBid", bidding);
@@ -141,6 +148,11 @@ try {
     
     socket.on("tombolJoin", (trig) => {
       io.emit('tombolJoin', trig);
+    });
+
+    socket.on("LanjutRoomBid", (noLot) => {
+      // console.log(noLot);
+      io.emit('LanjutRoomBid', noLot);
     });
   
     socket.on("kirimMessage", async ({ room, id_peserta, id_event, is_admin, pesan }) => {

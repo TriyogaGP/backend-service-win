@@ -5,7 +5,9 @@ const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 const _ = require('lodash');
+const { logger } = require('../configs/db.winston')
 const nodeGeocoder = require('node-geocoder');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -135,6 +137,60 @@ function loginPeserta (models) {
 			let sendData = await models.LoggerPeserta.create(kirimData)
 
 			if(sendData) return OK(res, await _buildResponsePeserta(data, refreshToken, accessToken))
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function forgotPass (models) {
+  return async (req, res, next) => {
+		let { email, content } = req.body
+		let table = content == 'Admin' ? models.Admin : models.User
+    try {
+			const data = await table.findOne({
+				where: {
+					statusAktif: true,
+					email: email
+				},
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+			});
+
+			if(!data){ return NOT_FOUND(res, 'data tidak di temukan !') }
+
+			let transporter = nodemailer.createTransport({
+				// host: 'smtp.gmail.com',
+				// port: 587,
+				// secure: false, // true for 465, false for other ports
+				service: 'gmail',
+				auth: {
+					user: 'triyoga.ginanjar.p@gmail.com',
+					pass: 'tarabtjmvwwkvpby' //YD070420yd@
+				}
+			});
+
+			let html = `<h1>Data Informasi Akun</h1>
+			<ul>`;
+			html += `<li>Nama Lengkap : ${data.nama}</li>
+				<li>Alamat Email : ${data.email}</li>
+				<li>Username : ${content == 'Admin' ? data.username : 'tidak ada username'}</li>
+				<li>Kata Sandi : ${decrypt(data.kataSandi)}</li>
+			</ul>
+			Harap informasi ini jangan di hapus karena informasi ini penting adanya. Terimakasih. <br>Jika Anda memiliki pertanyaan, silakan balas email ini`;
+			
+			let mailOptions = {
+				from: process.env.EMAIL,
+				to: email,
+				subject: 'Konfirmasi Lupa Kata Sandi',
+				// text: `Silahkan masukan kode verifikasi akun tersebut`
+				html: html,
+			};
+
+			transporter.sendMail(mailOptions, (err, info) => {
+				if (err) return NOT_FOUND(res, 'Gagal mengirim data ke alamat email anda, cek lagi email yang di daftarkan!.')
+			});
+
+			return OK(res, data, 'Kata Sandi sudah di kirimkan ke email anda, silahkan periksa email anda ..')
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -284,6 +340,7 @@ function ubahKataSandi (models) {
 module.exports = {
   loginAdmin,
   loginPeserta,
+	forgotPass,
   getProfile,
   getAddress,
   getDashboard,

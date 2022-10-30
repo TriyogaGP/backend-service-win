@@ -5,10 +5,10 @@ dotenv.config();
  
 const config = {
   HOST: process.env.DB_HOST || "localhost",
-  USER: process.env.DB_USER || "root",
-  PASSWORD: process.env.DB_PASSWORD || "",
-  DB: process.env.DB_NAME || "db_yoga",
-  PORT: process.env.DB_PORT || 3307,
+  USER: process.env.DB_USER || "userrootwin",
+  PASSWORD: process.env.DB_PASSWORD || "userrootwin",
+  DB: process.env.DB_NAME || "db_win",
+  PORT: process.env.DB_PORT || 3306,
 }
 
 // create connection

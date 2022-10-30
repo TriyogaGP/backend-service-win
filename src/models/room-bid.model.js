@@ -4,6 +4,13 @@ const RoomBidScheme = Sequelize => {
   const { DataTypes } = Sequelize;
 
   return {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      autoIncrement: true,
+      field: 'id'
+    },
     room: {
       type: DataTypes.STRING(256),
       allowNull: false,

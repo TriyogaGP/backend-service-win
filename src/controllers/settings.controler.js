@@ -8,6 +8,7 @@ const {
 const { encrypt, decrypt } = require('../utils/helper.utils')
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
+const { logger } = require('../configs/db.winston')
 const dotenv = require('dotenv');
 dotenv.config();
 const BASE_URL = process.env.BASE_URL
@@ -125,8 +126,10 @@ function getEncrypt () {
 				hasil: encrypt(kata)
 			}
 
+			// logger.info(JSON.stringify({ message: dataEncrypt, level: 'info', timestamp: new Date() }), {route: '/settings/encryptPass'});
 			return OK(res, dataEncrypt);
     } catch (err) {
+			// logger.error(JSON.stringify({ message: err.message, level: 'error', timestamp: new Date() }), {route: '/settings/encryptPass'});
 			return NOT_FOUND(res, err.message)
     }
   }  
