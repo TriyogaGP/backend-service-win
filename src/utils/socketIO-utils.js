@@ -247,23 +247,65 @@ const setUserBidding = async (id_npl, id_lot, harga_bidding, is_admin) => {
 	}
 };
 
-const setUserPemenang = async (create_by, id_bidding, nominal, nama, no_npl) => {
+const setUserPemenang = async (create_by, id_bidding, nominal, nama, no_npl, remarks) => {
   let kirim = { 
 		createBy: create_by, 
 		idBidding: id_bidding, 
 		nominal,
-    remarks: 'Sudah ada pemenang nya !'
+    remarks
 	}
   await models.PemenangLelang.create(kirim);  
   return { id_bidding, nominal, nama, no_npl }
 };
 
 const getUserPemenang = async (id_bidding) => {
-  let jml = await models.PemenangLelang.count({ where: { idBidding: id_bidding} });  
+  let jml = await models.PemenangLelang.count({ where: { idBidding: id_bidding} }); 
   if(jml > 1) {
     return true
   }else{
     return false
+  }  
+};
+
+const setNotifikasi = async (kondisi, id_peserta, room, id_bidding = null, judul = null, pesan = null, status_aktif = 0) => {
+  let where = {}
+
+  if(kondisi == 'create') {
+    where.idPeserta = id_peserta
+  }else{
+    where.statusAktif = false
+  }
+  
+  let dataNotif = await models.Notification.findAll({
+    where,
+    attributes: { exclude: ['updatedAt', 'deletedAt'] },
+  });
+
+  let dataKumpul = []
+  await dataNotif.map(val => {
+    let objectBaru = Object.assign(val.dataValues, {
+      params: val.dataValues.params ? JSON.parse([val.dataValues.params]) : {}
+    });
+    if(val.dataValues.params.room == room) return dataKumpul.push(objectBaru);
+  })
+
+  let kirimData = {
+    type: 'IN_APP',
+    judul: judul,
+    pesan: pesan,
+    params: JSON.stringify({
+      idBidding: id_bidding,
+      noLot: room.split('_')[0],
+      room: room
+    }),
+    isRead: 0,
+    statusAktif: status_aktif
+  }
+
+  if(!dataKumpul.length && kondisi == 'create') {
+    await models.Notification.create({ ...kirimData, idPeserta: id_peserta })
+  }else{
+    await models.Notification.update(kirimData, { where })
   }
 };
 
@@ -365,6 +407,7 @@ module.exports = {
   setUserBidding,
   setUserPemenang,
   getUserPemenang,
+  setNotifikasi,
   messageRoom,
   getUserData,
   userLeave,

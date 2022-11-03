@@ -5,7 +5,7 @@ const {
 	_buildResponseLoggerAdmin, 
 	_buildResponseLoggerPeserta 
 } = require('../utils/build-response');
-const { encrypt, decrypt } = require('../utils/helper.utils')
+const { encrypt, decrypt, convertDateTime } = require('../utils/helper.utils')
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const { logger } = require('../configs/db.winston')
@@ -386,6 +386,73 @@ function getMeasurement (models) {
   }  
 }
 
+function getNotification (models) {
+	return async (req, res, next) => {
+    let { id_peserta, is_read, limit, status_aktif, look } = req.query
+    let where = {}
+	  try {
+			if(look == 'ONE') {
+				if(status_aktif) {
+					where.statusAktif = status_aktif
+				}
+				if(id_peserta) {
+					where = {
+						idPeserta: id_peserta,
+						isRead: is_read,
+						statusAktif: true
+					}
+				}
+
+				const dataNotification = await models.Notification.findAll({
+					where,
+					attributes: { exclude: ['updatedAt', 'deletedAt'] },
+					order: [
+						['createdAt', 'DESC'],
+					],
+					limit: parseInt(limit)
+				});
+
+				let dataKumpul = []
+				await dataNotification.map(val => {
+					let objectBaru = Object.assign(val.dataValues, {
+						params: val.dataValues.params ? JSON.parse([val.dataValues.params]) : null,
+						createdAt: convertDateTime(val.dataValues.createdAt),
+					});
+					return dataKumpul.push(objectBaru)
+				})
+
+				return OK(res, { data: dataKumpul, count: dataKumpul.length });
+			}else if(look == 'ALL') {
+				const dataNotification = await models.Notification.findAll({
+					where: { idPeserta: id_peserta, statusAktif: true },
+					attributes: { exclude: ['updatedAt', 'deletedAt'] },
+					order: [
+						['createdAt', 'DESC'],
+					]
+				});
+
+				let dataKumpul = []
+				await dataNotification.map(val => {
+					let objectBaru = Object.assign(val.dataValues, {
+						params: val.dataValues.params ? JSON.parse([val.dataValues.params]) : null,
+						createdAt: convertDateTime(val.dataValues.createdAt),
+					});		
+					return dataKumpul.push(objectBaru)
+				})
+
+				return OK(res, { 
+					data: dataKumpul,
+					All: dataKumpul.length,
+					Read: dataKumpul.filter(val => val.isRead == true).length,
+					unRead: dataKumpul.filter(val => val.isRead == false).length
+				});
+			}
+	  } catch (err) {
+      return NOT_FOUND(res, err.message)
+	  }
+	}  
+}
+
 module.exports = {
   updateFile,
   updateBerkas,
@@ -401,4 +468,5 @@ module.exports = {
   getLoggerAdmin,
   getLoggerPeserta,
   getMeasurement,
+  getNotification,
 }

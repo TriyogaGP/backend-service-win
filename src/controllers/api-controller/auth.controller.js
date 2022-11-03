@@ -267,8 +267,43 @@ function getAddress (models) {
 
 function testing (models) {
   return async (req, res, next) => {
+		let where = {}
     try {
-			return OK(res, {data: 'perubahan tester'});
+			
+			let dataNotif = await models.Notification.findAll({
+				where: { statusAktif: false },
+				attributes: { exclude: ['updatedAt', 'deletedAt'] },
+			});
+
+			let dataKumpul = []
+			await dataNotif.map(val => {
+				let objectBaru = Object.assign(val.dataValues, {
+					params: val.dataValues.params ? JSON.parse([val.dataValues.params]) : {}
+				});
+				if(val.dataValues.params.room == '0002_Event 1') return dataKumpul.push(objectBaru);
+			})
+
+			if (!dataKumpul.length) {
+				let kirimData = {
+					idPeserta: '1',
+					type: 'IN_APP',
+					judul: null,
+					pesan: null,
+					params: JSON.stringify({
+						idPemenang: null,
+						noLot: '0002',
+						room: '0002_Event 1'
+					}),
+					isRead: 0,
+					statusAktif: 0
+				}
+	
+				await models.Notification.create(kirimData)
+				return OK(res);
+			} else {
+				return OK(res, dataKumpul);
+			}
+
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }

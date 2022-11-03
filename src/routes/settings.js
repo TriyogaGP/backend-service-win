@@ -14,6 +14,7 @@ const {
   getLoggerAdmin,
   getLoggerPeserta,
   getMeasurement,
+  getNotification,
 } = require('../controllers/settings.controler')
 const { uploadFile } = require('../middleware/uploadFile')
 const { uploadBerkas } = require('../middleware/uploadBerkas')
@@ -35,6 +36,7 @@ module.exports = models => {
   route.route('/getLoggerAdmin').get(verifyToken, getLoggerAdmin(models))
   route.route('/getLoggerPeserta').get(verifyToken, getLoggerPeserta(models))
   route.route('/getMeasurement').get(verifyToken, getMeasurement(models))
+  route.route('/getNotification').get(verifyToken, getNotification(models))
   
   return route;
 }
