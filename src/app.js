@@ -146,6 +146,10 @@ try {
       }
     });
   
+    socket.on("notifikasi", (message) => {
+      io.emit("notifikasi", message);
+    });
+
     socket.on("done-bidding", (message) => {
       io.emit("done-bidding", message);
     });

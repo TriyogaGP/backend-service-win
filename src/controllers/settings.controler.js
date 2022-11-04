@@ -388,7 +388,7 @@ function getMeasurement (models) {
 
 function getNotification (models) {
 	return async (req, res, next) => {
-    let { id_peserta, is_read, limit, status_aktif, look } = req.query
+    let { id_peserta, id_notifikasi, is_read, limit, status_aktif, look } = req.query
     let where = {}
 	  try {
 			if(look == 'ONE') {
@@ -401,6 +401,9 @@ function getNotification (models) {
 						isRead: is_read,
 						statusAktif: true
 					}
+				}
+				if(id_notifikasi) {
+					where.idNotification = id_notifikasi
 				}
 
 				const dataNotification = await models.Notification.findAll({
@@ -446,11 +449,48 @@ function getNotification (models) {
 					Read: dataKumpul.filter(val => val.isRead == true).length,
 					unRead: dataKumpul.filter(val => val.isRead == false).length
 				});
+			}else{
+				if(id_notifikasi) {
+					where.idNotification = id_notifikasi
+				}
+
+				const dataNotification = await models.Notification.findAll({
+					where,
+					attributes: { exclude: ['updatedAt', 'deletedAt'] },
+					order: [
+						['createdAt', 'DESC'],
+					],
+				});
+
+				let dataKumpul = []
+				await dataNotification.map(val => {
+					let objectBaru = Object.assign(val.dataValues, {
+						params: val.dataValues.params ? JSON.parse([val.dataValues.params]) : null,
+						createdAt: convertDateTime(val.dataValues.createdAt),
+					});
+					return dataKumpul.push(objectBaru)
+				})
+
+				return OK(res, dataKumpul[0]);
 			}
 	  } catch (err) {
       return NOT_FOUND(res, err.message)
 	  }
 	}  
+}
+
+function postNotification (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+    try {
+			let kirimdata = { isRead: 1 }
+			await models.Notification.update(kirimdata, { where: { idPeserta: body.id_peserta, idNotification: body.id_notification } })
+
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
 }
 
 module.exports = {
@@ -469,4 +509,5 @@ module.exports = {
   getLoggerPeserta,
   getMeasurement,
   getNotification,
+  postNotification,
 }

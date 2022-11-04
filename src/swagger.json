@@ -3895,6 +3895,16 @@
 						}
 					},
 					{
+						"name": "id_notifikasi",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					},
+					{
 						"name": "limit",
 						"in": "query",
 						"style": "simple",
