@@ -10,6 +10,7 @@ const {
   getLot,
   crudLot,
   getNPL,
+  getManajemenNPL,
   crudPembelianNPL,
   crudNPL,
   getPemenang,
@@ -32,6 +33,7 @@ module.exports = models => {
   route.route('/getLot').get(getLot(models))
   route.route('/postLot').post(crudLot(models))
   route.route('/getNPL').get(getNPL(models))
+  route.route('/getManajemenNPL').get(getManajemenNPL(models))
   route.route('/postPembelianNPL').post(crudPembelianNPL(models))
   route.route('/postNPL').post(crudNPL(models))
   route.route('/getPemenang').get(getPemenang(models))

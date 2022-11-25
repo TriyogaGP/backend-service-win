@@ -42,6 +42,11 @@ const PembelianNPLScheme = Sequelize => {
       defaultValue: 0,
       field: 'verifikasi'
     },
+    jmlNPL: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+      field: 'jml_npl',
+    },
     nominal: {
       type: DataTypes.STRING(50),
       allowNull: true,

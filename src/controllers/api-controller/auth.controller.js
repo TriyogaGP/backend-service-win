@@ -7,11 +7,13 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const _ = require('lodash');
+const { request } = require('../../utils/request')
 const { logger } = require('../../configs/db.winston')
 const nodeGeocoder = require('node-geocoder');
 const dotenv = require('dotenv');
 dotenv.config();
 const BASE_URL = process.env.BASE_URL
+const KMART_BASE_URL = 'https://kld-api-stg.k-mart.co.id/v1/'
 
 function login (models) {
   return async (req, res, next) => {
@@ -267,9 +269,7 @@ function getAddress (models) {
 
 function testing (models) {
   return async (req, res, next) => {
-		let where = {}
     try {
-			
 			let dataNotif = await models.Notification.findAll({
 				where: { statusAktif: false },
 				attributes: { exclude: ['updatedAt', 'deletedAt'] },
@@ -303,7 +303,6 @@ function testing (models) {
 			} else {
 				return OK(res, dataKumpul);
 			}
-
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }

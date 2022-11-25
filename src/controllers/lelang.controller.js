@@ -389,13 +389,16 @@ function crudEvent (models) {
 
 function getLot (models) {
   return async (req, res, next) => {
-		let { status_aktif, sort } = req.query
+		let { id_event, status_aktif, sort } = req.query
 		let where = {}
 		let order = []
     try {
 			order = [
 				['createdAt', sort ? sort : 'ASC'],
 			]
+			if(id_event) { 
+				where.idEvent = id_event 
+			}
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
@@ -442,10 +445,15 @@ function crudLot (models) {
 							[Op.and]: [
 								{ idBarangLelang: body.id_barang_lelang },
 								{ idEvent: body.id_event },
+								{ statusLot: [2,3,4] },
 							]
 						},
 						{ [Op.or]: [
-								{ idBarangLelang: body.id_barang_lelang },
+								{ [Op.and]: [
+										{ idBarangLelang: body.id_barang_lelang },
+										{ statusLot: [2,3,4] },
+									] 
+								},
 								{ noLot: body.no_lot },
 							] 
 						},
@@ -540,10 +548,44 @@ function getNPL (models) {
   }  
 }
 
+function getManajemenNPL (models) {
+  return async (req, res, next) => {
+		let { id_kategori, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+
+			if(id_kategori) {
+				where.idKategori = id_kategori
+			}
+
+      const dataManajemenNPL = await models.ManajemenNPL.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'createdAt'] },
+				include: [
+					{ 
+						model: models.KategoriLelang,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+					},
+				],
+				order
+			});
+
+			return OK(res, dataManajemenNPL);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 function crudPembelianNPL (models) {
   return async (req, res, next) => {
 		let body = { ...req.body }
     try {
+			console.log(body);
 			let kirimdata;
 			if(body.jenis == 'ADD'){
 				kirimdata = {
@@ -552,6 +594,7 @@ function crudPembelianNPL (models) {
 					typePembelian: body.type_pembelian,
 					typeTransaksi: body.type_transaksi,
 					noPembelian: body.no_pembelian,
+					jmlNPL: body.jml_nonpl,
 					nominal: body.nominal,
 					tanggalTransfer: body.tanggal_transfer,
 					statusAktif: 1,
@@ -565,6 +608,7 @@ function crudPembelianNPL (models) {
 					typePembelian: body.type_pembelian,
 					typeTransaksi: body.type_transaksi,
 					noPembelian: body.no_pembelian,
+					jmlNPL: body.jml_nonpl,
 					nominal: body.nominal,
 					tanggalTransfer: body.tanggal_transfer,
 					statusAktif: 1,
@@ -886,6 +930,7 @@ module.exports = {
   getLot,
   crudLot,
   getNPL,
+  getManajemenNPL,
   crudPembelianNPL,
   crudNPL,
   getPemenang,

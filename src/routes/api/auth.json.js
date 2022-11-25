@@ -23,7 +23,7 @@ module.exports = models => {
   route.route('/updateFotoProfile').post(uploadFile, updateFotoProfile(models))
   route.route('/getProfile/:idPeserta').get(getProfile(models))
   route.route('/getAddress/:idPeserta').get(getAddress(models))
-  route.route('/testing').get(testing(models))
+  route.route('/testing').get(testing())
   
   return route;
 }
