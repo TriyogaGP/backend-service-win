@@ -13,6 +13,7 @@ function _buildResponsePeserta(dataPeserta, refreshToken, accessToken) {
 	return {
 		// ...dataKumpul.dataValues,
 		idPeserta: dataPeserta.idPeserta,
+		nama: dataPeserta.nama,
 		refreshToken,
 		accessToken
 	}

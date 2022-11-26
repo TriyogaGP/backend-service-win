@@ -73,7 +73,7 @@ function UpperFirstLetter(str) {
 }
 
 function dateconvert(str) {
-	const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+	const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 	const date = new Date(str);
 	const mnth = bulan[date.getMonth()];
 	const day = ("0" + date.getDate()).slice(-2);
