@@ -321,6 +321,34 @@ function getPembelianNPL (models) {
   }  
 }
 
+function getDataNPL (models) {
+  return async (req, res, next) => {
+		let { id_peserta, id_event, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+			if(id_peserta) { 
+				where.idPeserta = id_peserta 
+			}
+			if(id_peserta) { 
+				where.idEvent = id_event
+			}
+
+      const dataNPL = await models.NPL.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+			});
+
+			return OK(res, dataNPL);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 function crudPembelianNPL (models) {
   return async (req, res, next) => {
 		let namaFile = req.files[0].filename;
@@ -362,5 +390,6 @@ module.exports = {
   getEventLelang,
   getLotLelang,
   getPembelianNPL,
+  getDataNPL,
   crudPembelianNPL,
 }

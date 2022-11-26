@@ -667,6 +667,23 @@ function crudPembelianNPL (models) {
   }  
 }
 
+function crudManajemenNPL (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+    try {
+			let kirimdata = {
+				idKategori: body.id_kategori,
+				nominal: body.nominal,
+				createBy: body.create_update_by,
+			}
+			await models.ManajemenNPL.create(kirimdata)
+			return OK(res);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 function crudNPL (models) {
   return async (req, res, next) => {
 		let body = { ...req.body }
@@ -932,6 +949,7 @@ module.exports = {
   getNPL,
   getManajemenNPL,
   crudPembelianNPL,
+  crudManajemenNPL,
   crudNPL,
   getPemenang,
   crudPemenang,
