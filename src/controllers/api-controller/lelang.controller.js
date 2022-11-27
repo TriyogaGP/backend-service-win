@@ -332,6 +332,8 @@ function getDataNPL (models) {
 			]
 			if(id_peserta) { 
 				where.idPeserta = id_peserta 
+				where.statusNPL = 0 
+				where.statusAktif = true 
 			}
 			if(id_peserta) { 
 				where.idEvent = id_event
