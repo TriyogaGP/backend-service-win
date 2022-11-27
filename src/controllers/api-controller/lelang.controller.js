@@ -161,7 +161,10 @@ function getEventLelang (models) {
 			const dataEvent = await models.Event.findAll({
 				where: { 
 					// idEvent: wherein,
-					statusAktif: true
+					statusAktif: true,
+					tanggalEvent: {
+						[Op.gte]: new Date(new Date() - (1 * 24 * 60 * 60 * 1000)) // one days ago
+					}
 				},
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 				order

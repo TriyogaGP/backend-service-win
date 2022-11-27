@@ -925,7 +925,12 @@ function getBidLelang (models) {
 						model: models.User,
 						attributes,
 					},
-					{ 
+					{
+						where: {
+							tanggalEvent: {
+								[Op.gte]: new Date(new Date() - (1 * 24 * 60 * 60 * 1000)) // one days ago
+							}
+						},
 						model: models.Event,
 						attributes,
 					},
