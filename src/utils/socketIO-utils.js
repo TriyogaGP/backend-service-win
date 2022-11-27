@@ -247,7 +247,11 @@ const setUserBidding = async (id_npl, id_lot, harga_bidding, is_admin) => {
 	}
 };
 
-const setUserPemenang = async (create_by, id_bidding, nominal, nama, no_npl, remarks) => {
+const setUserPemenang = async (create_by, room, id_bidding, nominal, nama, no_npl, remarks) => {
+  let lot = {
+    statusLot: 4,
+  }
+  await models.LOT.update(lot, {where: { noLot: room.split('_')[0] }});
   let kirim = { 
 		createBy: create_by, 
 		idBidding: id_bidding, 

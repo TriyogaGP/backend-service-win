@@ -139,7 +139,7 @@ try {
     socket.on("send-pemenang", async ({ create_by, room, id_bidding, nominal, nama, no_npl, remarks }) => {
       const check = await getUserPemenang(id_bidding)
       if(!check) {
-        const pemenang = await setUserPemenang(create_by, id_bidding, nominal, nama, no_npl, remarks)
+        const pemenang = await setUserPemenang(create_by, room, id_bidding, nominal, nama, no_npl, remarks)
         io.emit("send-pemenang", pemenang);
         await setNotifikasi('update', null, room, id_bidding, `Pemenang Lelang ${room}`, remarks, 1);
         io.emit("notifikasi", true);
