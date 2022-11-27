@@ -811,12 +811,18 @@ function getEventActive (models) {
 		let { status_aktif, sort } = req.query
 		let where = {}
 		let order = []
-	  try {
+	  try { 
+			where.tanggalEvent = {
+				[Op.gte]: new Date(new Date() - (1 * 24 * 60 * 60 * 1000)) // one days ago
+			}
 		  order = [
 				['createdAt', sort ? sort : 'ASC'],
 			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
+				where.tanggalEvent = {
+          [Op.gte]: new Date(new Date() - (1 * 24 * 60 * 60 * 1000)) // one days ago
+        }
 			}
       const dataEvent = await models.Event.findAll({
 				where,

@@ -146,21 +146,21 @@ function getEventLelang (models) {
 				['createdAt', sort ? sort : 'ASC'],
 			]
 
-      const dataPeserta = await models.PembelianNPL.findAll({
-				where: { 
-					idPeserta: id_peserta,
-					statusAktif: true,
-				},
-				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				order
-			});
+      // const dataPeserta = await models.PembelianNPL.findAll({
+			// 	where: { 
+			// 		idPeserta: id_peserta,
+			// 		statusAktif: true,
+			// 	},
+			// 	attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+			// 	order
+			// });
 			
-			let wherein = []
-			dataPeserta.map(val => wherein.push(val.idEvent))
+			// let wherein = []
+			// dataPeserta.map(val => wherein.push(val.idEvent))
 
 			const dataEvent = await models.Event.findAll({
 				where: { 
-					idEvent: wherein,
+					// idEvent: wherein,
 					statusAktif: true
 				},
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
