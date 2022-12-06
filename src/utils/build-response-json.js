@@ -1,5 +1,6 @@
 const { convertDateTime, dateconvert, convertDate } = require('./helper.utils');
 const dotenv = require('dotenv');
+const _ = require('lodash');
 dotenv.config();
 const BASE_URL = process.env.BASE_URL
 
@@ -358,6 +359,37 @@ async function _buildResponseDetailLot(models, dataLot) {
 	})
 }
 
+async function _buildResponseListNPL(dataNPL) {
+	let dataKumpul = []
+	dataNPL.map(val => {
+		let kumpul = {
+			idNpl: val.idNpl,
+			idPembelianNPL: val.idPembelianNPL,
+			idPeserta: val.idPeserta,
+			idEvent: val.idEvent,
+			noNpl: val.noNpl,
+			npl: val.npl,
+			statusNPL: val.statusNPL,
+			kodeEvent: val.Event.kodeEvent,
+			namaEvent: val.Event.namaEvent,
+			waktuEvent: convertDate(val.Event.tanggalEvent) + " " + val.Event.waktuEvent,
+			jmlNPL: val.PembelianNPL.jmlNPL,
+			verifikasi: val.PembelianNPL.verifikasi,
+			statusAktif: val.statusAktif,
+		}
+		dataKumpul.push(kumpul)
+	})
+	let result = _.chain(dataKumpul).groupBy("namaEvent").toPairs().map(val => {
+		return _.zipObject(['namaEvent', 'dataNPL'], val)
+	}).value()
+	return await Promise.all(result.map(val => {
+		let objectBaru = Object.assign(val, {
+			waktuEvent: val.dataNPL[0].waktuEvent
+		});
+		return objectBaru
+	}))
+}
+
 async function _buildResponsePembelianNPL(models, dataPembelianNPL) {
 	const dataNPL = await models.NPL.findAll({
 		attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
@@ -672,6 +704,7 @@ module.exports = {
   _buildResponseDetailLelang,
   _buildResponseLotLelang,
   _buildResponseDetailLot,
+  _buildResponseListNPL,
   _buildResponsePembelianNPL,
   _buildResponseProduk,
   _buildResponseDetailProduk,

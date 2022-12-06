@@ -1,6 +1,13 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../../utils/response.utils');
-const { _buildResponseLelang, _buildResponseDetailLelang, _buildResponseLotLelang, _buildResponseDetailLot, _buildResponsePembelianNPL } = require('../../utils/build-response-json');
-const { encrypt, decrypt, convertDate, makeRandomAngka, convertDateGabung } = require('../../utils/helper.utils');
+const { 
+	_buildResponseLelang,
+	_buildResponseDetailLelang,
+	_buildResponseLotLelang,
+	_buildResponseDetailLot,
+	_buildResponseListNPL,
+	_buildResponsePembelianNPL
+} = require('../../utils/build-response-json');
+const { encrypt, decrypt, convertDate, makeRandomAngka, convertDateGabung, dateconvert } = require('../../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
@@ -338,16 +345,110 @@ function getDataNPL (models) {
 				where.statusNPL = 0 
 				where.statusAktif = true 
 			}
-			if(id_peserta) { 
+			if(id_event) { 
 				where.idEvent = id_event
 			}
 
       const dataNPL = await models.NPL.findAll({
 				where,
-				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				order
 			});
 
 			return OK(res, dataNPL);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getListNPLPeserta (models) {
+  return async (req, res, next) => {
+		let { id_peserta, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+			if(id_peserta) { 
+				where.idPeserta = id_peserta 
+				where.statusAktif = true 
+			}
+
+      const dataNPL = await models.NPL.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{
+						model: models.Event,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+					},
+					{
+						model: models.PembelianNPL,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+					},
+				],
+				order
+			});
+
+			return OK(res, await _buildResponseListNPL(dataNPL));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getListEvent (models) {
+  return async (req, res, next) => {
+		let { id_event, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', sort ? sort : 'ASC'],
+			]
+			if(id_event) { 
+				where.idEvent = id_event
+				where.statusLot = 2
+			}
+
+      const dataLOT = await models.LOT.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{
+						model: models.Event,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+					},
+				],
+				order
+			});
+
+			if(!dataLOT.length) {
+				return OK(res, null, 'Data LOT tidak tersedia di Event ini !');	
+			}
+			
+			const dataBarangLelang = await models.BarangLelang.findOne({
+				where: { idBarangLelang: dataLOT[0].idBarangLelang },
+				attributes: ['idKategori'],
+			});
+
+			const dataManajemenNPL = await models.ManajemenNPL.findOne({
+				where: { idKategori: dataBarangLelang.idKategori },
+				attributes: { exclude: ['createBy', 'createdAt'] },
+				order: [
+					['createdAt', 'DESC'],
+				]
+			});
+
+			let objectBaru = {
+				idEvent: dataLOT[0].Event.idEvent,
+				namaEvent: dataLOT[0].Event.namaEvent + ' | ' + dateconvert(dataLOT[0].Event.tanggalEvent) + " " + dataLOT[0].Event.waktuEvent,
+				nominal: dataManajemenNPL.nominal,
+			}
+
+			return OK(res, objectBaru);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -374,6 +475,7 @@ function crudPembelianNPL (models) {
 				typePembelian: 1,
 				typeTransaksi: 2,
 				noPembelian: noPembelian,
+				jmlNPL: body.jml_nonpl,
 				nominal: body.nominal,
 				tanggalTransfer: convertDateGabung(body.tanggal_transfer),
 				bukti: body.nama_folder+'/'+body.namaFile,
@@ -396,5 +498,7 @@ module.exports = {
   getLotLelang,
   getPembelianNPL,
   getDataNPL,
+  getListNPLPeserta,
+  getListEvent,
   crudPembelianNPL,
 }

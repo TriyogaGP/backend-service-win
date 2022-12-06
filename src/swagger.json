@@ -4563,6 +4563,81 @@
 				}
 			}
 		},
+		"/apirest/v1/lelang/getListNPL": {
+			"get": {
+				"tags": ["API Lelang"],
+				"summary": "Untuk List NPL (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_peserta",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
+		"/apirest/v1/lelang/getListEvent": {
+			"get": {
+				"tags": ["API Lelang"],
+				"summary": "Untuk List Event (API)",
+				"parameters": [
+					{
+						"name": "sort",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"schema": {
+							"type": "enum",
+							"enum": ["ASC", "DESC"],
+							"example": ""
+						}
+					},
+					{
+						"name": "id_event",
+						"in": "query",
+						"style": "simple",
+						"explode": false,
+						"required": true,
+						"schema": {
+							"type": "string",
+							"example": ""
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Berhasil"
+					},
+					"404": {
+						"description": "Gagal atau Unauthorized"
+					}
+				}
+			}
+		},
 		"/apirest/v1/lelang/postPembelianNPL": {
 			"post": {
 				"tags": ["API Lelang"],
@@ -4582,6 +4657,11 @@
 									"id_event": {
 										"type": "number",
 										"example": "2",
+										"required": true
+									},
+									"jml_nonpl": {
+										"type": "string",
+										"example": "4",
 										"required": true
 									},
 									"nominal": {
