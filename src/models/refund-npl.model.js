@@ -69,7 +69,7 @@ module.exports = {
       );
 
     RefundNPL.associate = models => {
-      models.RefundNPL.belongsTo(models.NPL, {
+      models.RefundNPL.hasOne(models.NPL, {
         foreignKey: 'idNpl',
         constraint: false
       });

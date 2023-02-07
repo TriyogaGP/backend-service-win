@@ -9,6 +9,8 @@ const {
     getListNPLPeserta,
     getListEvent,
     crudPembelianNPL,
+    getListPelunasan,
+    crudPelunasanLelang,
 } = require('../../controllers/api-controller/lelang.controller')
 const { uploadFile } = require('../../middleware/uploadFile')
 
@@ -24,6 +26,8 @@ module.exports = models => {
   route.route('/getListNPL').get(getListNPLPeserta(models))
   route.route('/getListEvent').get(getListEvent(models))
   route.route('/postPembelianNPL').post(uploadFile, crudPembelianNPL(models))
+  route.route('/getListPelunasan').get(getListPelunasan(models))
+  route.route('/postPelunasanLelang').post(uploadFile, crudPelunasanLelang(models))
   
   return route;
 }

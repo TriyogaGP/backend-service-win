@@ -1,5 +1,4 @@
 const { Router } = require('express');
-const {body, checkSchema, validationResult} = require('express-validator');
 const {
   getAdmin,
   crudAdmin,

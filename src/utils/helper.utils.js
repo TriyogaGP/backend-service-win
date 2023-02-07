@@ -8,11 +8,11 @@ function encrypt(text) {
 	var c = 0
 	var v = ""
 	for (let i = 0; i < text.length; i++) {
-			if (c == r.length) {
-					c = 0
-			}
-			v += r.substr(c, 1) + (String.fromCharCode(text.substr(i, 1).charCodeAt(0) ^ r.substr(c, 1).charCodeAt(0)))
-			c++
+		if (c == r.length) {
+			c = 0
+		}
+		v += r.substr(c, 1) + (String.fromCharCode(text.substr(i, 1).charCodeAt(0) ^ r.substr(c, 1).charCodeAt(0)))
+		c++
 	}
 	var ret = Buffer.from(ed(v)).toString('base64').replace(/\//g, 'garing')
 	return ret
@@ -25,9 +25,9 @@ function decrypt(text) {
 	var b = ed(c)
 	var v = ""
 	for (let i = 0; i < text.length; i++) {
-			var md5 = b.substr(i, 1)
-			i++
-			v += String.fromCharCode(b.substr(i, 1).charCodeAt(0) ^ md5.charCodeAt(0))
+		var md5 = b.substr(i, 1)
+		i++
+		v += String.fromCharCode(b.substr(i, 1).charCodeAt(0) ^ md5.charCodeAt(0))
 	}
 	return v.replace(/[^a-zA-Z0-9!@#$%^&*():\|{};+-_=?/",.~ ]/g, "")
 }
@@ -37,13 +37,13 @@ function ed(t) {
 	var c = 0
 	var v = ""
 	for (let i = 0; i < t.length; i++) {
-			if (c == r.length) {
-					c = 0
-			}
-			var aa = t.substr(i, 1)
-			var bb = r.substr(c, 1)
-			v += String.fromCharCode(aa.charCodeAt(0) ^ bb.charCodeAt(0))
-			c++
+		if (c == r.length) {
+			c = 0
+		}
+		var aa = t.substr(i, 1)
+		var bb = r.substr(c, 1)
+		v += String.fromCharCode(aa.charCodeAt(0) ^ bb.charCodeAt(0))
+		c++
 	}
 	return v
 }
@@ -142,8 +142,22 @@ function convertDateGabung(str) {
 	return valueConvert
 }
 
+function buildMysqlResponseWithPagination(records, params) {
+	const { limit = 25, page = 1, total } = params;
+	const totalPages = Math.ceil(total / limit);
+	return {
+		records,
+		pageSummary: {
+		page: Number(page),
+		limit: Number(limit),
+		total,
+		totalPages,
+		},
+	};
+}
+
 module.exports = {
-  encrypt,
+  	encrypt,
 	decrypt,
 	makeRandom,
 	makeRandomAngka,
@@ -154,4 +168,5 @@ module.exports = {
 	convertDateTime,
 	convertDateTime2,
 	convertDateGabung,
+	buildMysqlResponseWithPagination,
 }

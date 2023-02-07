@@ -292,7 +292,10 @@ async function _buildResponseNPL(models, kategori = null, id_event, dataPembelia
 					model: models.RefundNPL,
 					attributes: { exclude: ['createBy', 'updateBy', 'createdAt', 'updatedAt'] },
 				}
-			]
+			],
+			order: [
+				['idNpl', 'ASC'],
+			],
 		});
 		
 		let dataKumpulNPL = []

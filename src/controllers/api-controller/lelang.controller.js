@@ -38,7 +38,8 @@ function getKategoriLelang (models) {
 
 			return OK(res, dataKategori);
     } catch (err) {
-			return NOT_FOUND(res, err.message)
+			// return NOT_FOUND(res, err.message)
+			return next(err.message);
     }
   }  
 }
@@ -146,7 +147,7 @@ function getBarangLelang (models) {
 
 function getEventLelang (models) {
   return async (req, res, next) => {
-		let { id_peserta, keyword, sort } = req.query
+		let { id_peserta, keyword, view, sort } = req.query
 		let order = []
     try {
 			order = [
@@ -486,7 +487,96 @@ function crudPembelianNPL (models) {
 
 			return OK(res);
     } catch (err) {
+			// return NOT_FOUND(res, err.message)
+			return next(err.message)
+    // }
+    }
+  }  
+}
+
+function getListPelunasan (models) {
+  return async (req, res, next) => {
+		let { id_peserta } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', 'DESC'],
+			]
+
+			const whereKey = id_peserta ? {
+				'$Bidding.NPL.id_peserta$': Number(id_peserta),
+				'$Bidding.is_admin$': 0,
+			} : {}
+
+			where = whereKey
+
+			const dataPelunasan = await models.PemenangLelang.findAll({
+				where,
+				include: [
+					{ 
+						model: models.Bidding,
+						include: [
+							{ 
+								model: models.LOT,
+								include: [
+									{ 
+										model: models.BarangLelang,
+									},
+								],
+							},
+							{ 
+								model: models.NPL,
+								include: [
+									{
+										model: models.User,
+									},
+								],
+							},
+						],
+					},
+				],
+				order,
+			});
+			
+			return OK(res, await dataPelunasan.map(val => {
+				return {
+					idPemenangLelang: val.idPemenangLelang,
+					idBidding: val.idBidding,
+					nominal: val.nominal,
+					namaBarangLelang: val.Bidding.LOT.BarangLelang.namaBarangLelang,
+					statusPay: val.statusPembayaran,
+					statusPembayaran: val.statusPembayaran === 1 ? 'Belum Lunas' : val.statusPembayaran === 3 ? 'Menunggu Verifikasi' : 'Sudah Lunas',
+					tanggal: dateconvert(val.updatedAt),
+				};
+			}));
+    } catch (err) {
 			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function crudPelunasanLelang (models) {
+  return async (req, res, next) => {
+		let namaFile = req.files[0].filename;
+		let body = { ...req.body, namaFile };
+    try {
+			let kirimdata = {
+				namaPemilik: body.nama_pemilik,
+				tipePelunasan: 2,
+				statusPembayaran: 3,
+				tanggalTransfer: body.tanggal+' '+body.waktu,
+				bukti: body.namaFile,
+				statusAktif: 1,
+				updateBy: body.id_peserta,
+			}
+			await models.PemenangLelang.update(kirimdata, { where: { idPemenangLelang: body.id_pemenang_lelang } })
+
+			return OK(res);
+    } catch (err) {
+			// return NOT_FOUND(res, err.message)
+			return next(err.message)
+    // }
     }
   }  
 }
@@ -501,4 +591,6 @@ module.exports = {
   getListNPLPeserta,
   getListEvent,
   crudPembelianNPL,
+  getListPelunasan,
+  crudPelunasanLelang,
 }

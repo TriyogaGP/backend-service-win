@@ -3,9 +3,11 @@ const {
 	_buildResponseMenu, 
 	_buildResponseKurir, 
 	_buildResponseLoggerAdmin, 
-	_buildResponseLoggerPeserta 
+	_buildResponseLoggerPeserta,
+	_buildResponseBarangLelang,
+	_buildResponseLot,
 } = require('../utils/build-response');
-const { encrypt, decrypt, convertDateTime } = require('../utils/helper.utils')
+const { encrypt, decrypt, convertDateTime, dateconvert, convertDate } = require('../utils/helper.utils')
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const { logger } = require('../configs/db.winston')
@@ -493,6 +495,202 @@ function postNotification (models) {
   }  
 }
 
+//Options Dropdown
+function getPeserta (models) {
+  return async (req, res, next) => {
+		let { status_aktif, id_peserta, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['updatedAt', sort ? sort : 'ASC'],
+			]
+
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+			if(id_peserta) { 
+				where = {
+					idPeserta: id_peserta,
+					statusAktif: true
+				}
+			}
+
+      const dataProfile = await models.User.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				order,
+			});
+
+			const getResult = await Promise.all(dataProfile.map(async (val) => {
+				let dataAddress = await models.Address.findAll({
+					where: { idPeserta: val.idPeserta },
+					attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+					order
+				});
+	
+				let dataKumpul = Object.assign(val.dataValues, {
+					// fotoPeserta: BASE_URL+'image/berkas/'+val.dataValues.fotoPeserta,
+					// fotoKTP: BASE_URL+'image/berkas/'+val.dataValues.fotoKTP,
+					// fotoNPWP: BASE_URL+'image/berkas/'+val.dataValues.fotoNPWP,
+					dataAddress,
+				})
+				return dataKumpul;
+			}))
+
+			return OK(res, getResult);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getKategoriLelang (models) {
+  return async (req, res, next) => {
+		let { status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['updatedAt', sort ? sort : 'ASC'],
+			]
+
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+
+			const dataKategori = await models.KategoriLelang.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				order,
+			});
+
+			return OK(res, dataKategori);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getBarangLelang (models) {
+  return async (req, res, next) => {
+		let { status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['updatedAt', sort ? sort : 'ASC'],
+			]
+
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+
+      const dataBarangLelang = await models.BarangLelang.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{
+						model: models.KategoriLelang,
+						attributes: ['kategori', 'statusAktif']
+					}
+				],
+				order,
+			});
+
+			return OK(res, await _buildResponseBarangLelang(models, dataBarangLelang));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getEvent (models) {
+  return async (req, res, next) => {
+		let { status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['updatedAt', sort ? sort : 'ASC'],
+			]
+
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+
+      const dataEvent = await models.Event.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				order,
+			});
+
+			let dataKumpul = []
+			await dataEvent.map(val => {
+				const splitkodeevent = val.dataValues.kodeEvent.split('-')
+				let objectBaru = Object.assign(val.dataValues, {
+					tanggalEvent: convertDate(val.dataValues.tanggalEvent),
+					startEvent: dateconvert(val.dataValues.tanggalEvent)+' '+val.dataValues.waktuEvent,
+					kodeevent_split: splitkodeevent[2],
+					// gambar: BASE_URL+'image/event/'+val.dataValues.gambar
+				});
+				return dataKumpul.push(objectBaru)
+			})
+
+			return OK(res, dataKumpul);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getLot (models) {
+  return async (req, res, next) => {
+		let { id_event, status_aktif, sort } = req.query
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['updatedAt', sort ? sort : 'ASC'],
+			]
+
+			if(id_event) { 
+				where.idEvent = id_event 
+			}
+
+			if(status_aktif) { 
+				where.statusAktif = status_aktif 
+			}
+
+      const dataLot = await models.LOT.findAll({
+				where,
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{ 
+						model: models.BarangLelang,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+						include: [
+							{ 
+								model: models.KategoriLelang,
+								attributes: ['kategori', 'statusAktif'],
+							},
+						]
+					},
+					{ 
+						model: models.Event,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+					},
+				],
+				order,
+			});
+
+			return OK(res, await _buildResponseLot(models, dataLot));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
   updateFile,
   updateBerkas,
@@ -510,4 +708,9 @@ module.exports = {
   getMeasurement,
   getNotification,
   postNotification,
+	getPeserta,
+	getKategoriLelang,
+	getBarangLelang,
+	getEvent,
+	getLot,
 }

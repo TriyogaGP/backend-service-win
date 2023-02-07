@@ -112,7 +112,7 @@ module.exports = {
         foreignKey: 'idPembelianNPL',
         constraint: false
       });
-      models.NPL.belongsTo(models.RefundNPL, {
+      models.NPL.hasOne(models.RefundNPL, {
         foreignKey: 'idNpl',
         constraint: false
       });

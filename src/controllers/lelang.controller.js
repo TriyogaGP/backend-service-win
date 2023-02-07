@@ -1,6 +1,6 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../utils/response.utils');
 const { _buildResponseBarangLelang, _buildResponseLot, _buildResponseNPL, _buildResponsePemenang, _buildResponseRoom, _buildResponseBidLelang } = require('../utils/build-response');
-const { encrypt, decrypt ,convertDate, dateconvert } = require('../utils/helper.utils');
+const { encrypt, decrypt ,convertDate, dateconvert, buildMysqlResponseWithPagination } = require('../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
@@ -14,24 +14,41 @@ const BASE_URL = process.env.BASE_URL
 
 function getKategoriLelang (models) {
   return async (req, res, next) => {
-		let { status_aktif, sort } = req.query
+		let { status_aktif, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let order = []
     try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			order = [
-				['createdAt', sort ? sort : 'ASC'],
+				['updatedAt', sort ? sort : 'ASC'],
 			]
 
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
-      const dataKategori = await models.KategoriLelang.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ kategori : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataKategori } = await models.KategoriLelang.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				order
+				order,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
-			return OK(res, dataKategori);
+			const responseData = buildMysqlResponseWithPagination(
+				dataKategori,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -91,17 +108,33 @@ function crudKategoriLelang (models) {
 
 function getBarangLelang (models) {
   return async (req, res, next) => {
-		let { status_aktif, sort } = req.query
+		let { status_aktif, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let order = []
     try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			order = [
-				['createdAt', sort ? sort : 'ASC'],
+				['updatedAt', sort ? sort : 'ASC'],
 			]
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
-      const dataBarangLelang = await models.BarangLelang.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ '$KategoriLelang.kategori$' : { [Op.like]: `%${keyword}%` }},
+					{ namaBarangLelang : { [Op.like]: `%${keyword}%` }},
+					{ noPolisi : { [Op.like]: `%${keyword}%` }},
+					{ noRangka : { [Op.like]: `%${keyword}%` }},
+					{ noMesin : { [Op.like]: `%${keyword}%` }},
+					{ deskripsi : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataBarangLelang } = await models.BarangLelang.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 				include: [
@@ -110,10 +143,19 @@ function getBarangLelang (models) {
 						attributes: ['kategori', 'statusAktif']
 					}
 				],
-				order
+				order,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
-			return OK(res, await _buildResponseBarangLelang(models, dataBarangLelang));
+			const getResult = await _buildResponseBarangLelang(models, dataBarangLelang)
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -272,20 +314,36 @@ function crudBarangLelang (models) {
 
 function getEvent (models) {
   return async (req, res, next) => {
-		let { status_aktif, sort } = req.query
+		let { status_aktif, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let order = []
     try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			order = [
-				['createdAt', sort ? sort : 'ASC'],
+				['updatedAt', sort ? sort : 'ASC'],
 			]
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
-      const dataEvent = await models.Event.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ kodeEvent : { [Op.like]: `%${keyword}%` }},
+					{ namaEvent : { [Op.like]: `%${keyword}%` }},
+					{ kelipatanBid : { [Op.like]: `%${keyword}%` }},
+					{ deskripsiEvent : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataEvent } = await models.Event.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				order
+				order,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
 			let dataKumpul = []
@@ -300,7 +358,12 @@ function getEvent (models) {
 				return dataKumpul.push(objectBaru)
 			})
 
-			return OK(res, dataKumpul);
+			const responseData = buildMysqlResponseWithPagination(
+				dataKumpul,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -389,20 +452,36 @@ function crudEvent (models) {
 
 function getLot (models) {
   return async (req, res, next) => {
-		let { id_event, status_aktif, sort } = req.query
+		let { id_event, status_aktif, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let order = []
     try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			order = [
-				['createdAt', sort ? sort : 'ASC'],
+				['updatedAt', sort ? sort : 'ASC'],
 			]
+
 			if(id_event) { 
 				where.idEvent = id_event 
 			}
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
-      const dataLot = await models.LOT.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ noLot : { [Op.like]: `%${keyword}%` }},
+					{ '$Event.kode_event$' : { [Op.like]: `%${keyword}%` }},
+					{ '$Event.nama_event$' : { [Op.like]: `%${keyword}%` }},
+					{ '$BarangLelang.nama_barang_lelang$' : { [Op.like]: `%${keyword}%` }},
+					{ '$BarangLelang.KategoriLelang.kategori$' : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataLot } = await models.LOT.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 				include: [
@@ -421,10 +500,19 @@ function getLot (models) {
 						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
 					},
 				],
-				order
+				order,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
-			return OK(res, await _buildResponseLot(models, dataLot));
+			const getResult = await _buildResponseLot(models, dataLot)
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -510,20 +598,36 @@ function crudLot (models) {
 
 function getNPL (models) {
   return async (req, res, next) => {
-		let { kategori, id_event, id_peserta, status_aktif, sort } = req.query
+		let { kategori, id_event, id_peserta, status_aktif, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
     try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
+
 			if(id_event) { 
 				where.idEvent= id_event
 			}
+
 			if(id_peserta) { 
 				where.idPeserta = id_peserta
 			}
-      const dataPembelianNPL = await models.PembelianNPL.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ noPembelian : { [Op.like]: `%${keyword}%` }},
+					{ '$Event.kode_event$' : { [Op.like]: `%${keyword}%` }},
+					{ '$Event.nama_event$' : { [Op.like]: `%${keyword}%` }},
+					{ '$User.nama$' : { [Op.like]: `%${keyword}%` }},
+					{ '$User.nik$' : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataPembelianNPL } = await models.PembelianNPL.findAndCountAll({
 				where,
 				attributes,
 				include: [
@@ -537,11 +641,35 @@ function getNPL (models) {
 					},
 				],
 				order: [
-					['createdAt', sort ? sort : 'ASC'],
-				]
+					['updatedAt', sort ? sort : 'ASC'],
+				],
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
-			
-			return OK(res, await _buildResponseNPL(models, kategori, id_event, dataPembelianNPL));
+
+			const getResult = await _buildResponseNPL(models, kategori, id_event, dataPembelianNPL)
+
+			let kumpulNPL = []
+			if(kategori == 'withNPL'){
+				let result = _.chain(getResult).groupBy("nama").toPairs().map(val => {
+					return _.zipObject(['nama', 'dataPembelianNPL'], val)
+				}).value()
+
+				kumpulNPL = await Promise.all(result.map(val => {
+					let objectBaru = Object.assign(val, {
+						nik: val.dataPembelianNPL[0].nik,
+						email: val.dataPembelianNPL[0].email
+					});
+					return objectBaru
+				}))
+			}
+
+			const responseData = buildMysqlResponseWithPagination(
+				kategori == 'withNPL' ? kumpulNPL : getResult,
+				{ limit, page, total: kategori == 'withNPL' ? kumpulNPL.length : count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -556,6 +684,7 @@ function getManajemenNPL (models) {
     try {
 			order = [
 				['createdAt', sort ? sort : 'ASC'],
+				['idKategori', 'ASC'],
 			]
 
 			if(id_kategori) {
@@ -564,7 +693,6 @@ function getManajemenNPL (models) {
 
       const dataManajemenNPL = await models.ManajemenNPL.findAll({
 				where,
-				attributes: { exclude: ['createBy', 'createdAt'] },
 				include: [
 					{ 
 						model: models.KategoriLelang,
@@ -574,7 +702,22 @@ function getManajemenNPL (models) {
 				order
 			});
 
-			return OK(res, dataManajemenNPL);
+			let dataKumpul = []
+			dataManajemenNPL.map(val => {
+				let kumpul = {
+					idManajemenNPL: val.idManajemenNPL,
+					idKategori: val.idKategori,
+					kategori: val.KategoriLelang.kategori,
+					nominal: val.nominal,
+				}
+				dataKumpul.push(kumpul)
+			})
+
+			let result = _.chain(dataKumpul).groupBy("kategori").toPairs().map(val => {
+				return _.zipObject(['kategori', 'dataManajemenNPL'], val)
+			}).value()
+
+			return OK(res, result);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -709,18 +852,33 @@ function crudNPL (models) {
 
 function getPemenang (models) {
 	return async (req, res, next) => {
-		let { status_aktif, sort } = req.query
+		let { status_aktif, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let order = []
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
 	  try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 		  order = [
 			  ['createdAt', sort ? sort : 'ASC'],
 		  ]
+
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
-			const dataPemenang = await models.PemenangLelang.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ namaPemilik : { [Op.like]: `%${keyword}%` }},
+					{ nominal : { [Op.like]: `%${keyword}%` }},
+					{ '$Bidding.LOT.Event.kode_event$' : { [Op.like]: `%${keyword}%` }},
+					{ '$Bidding.LOT.Event.nama_event$' : { [Op.like]: `%${keyword}%` }},
+					{ '$Bidding.LOT.BarangLelang.nama_barang_lelang$' : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+			const { count, rows: dataPemenang } = await models.PemenangLelang.findAndCountAll({
 				where,
 				attributes,
 				include: [
@@ -755,11 +913,19 @@ function getPemenang (models) {
 						],
 					},
 				],
-				order
+				order,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
-			return OK(res, await _buildResponsePemenang(models, dataPemenang));
-			// return OK(res, dataPemenang);
+			const getResult = await _buildResponsePemenang(models, dataPemenang);
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
 	  } catch (err) {
 			return NOT_FOUND(res, err.message)
 	  }
@@ -792,6 +958,12 @@ function crudPemenang (models) {
 			}else if(body.jenis == 'STATUSRECORD'){
 				kirimdata = {
 					statusAktif: body.status_aktif,
+					updateBy: body.create_update_by
+				}
+				await models.PemenangLelang.update(kirimdata, { where: { idPemenangLelang: body.id_pemenang_lelang } })
+			}else if(body.jenis == 'VERIFIKASI'){
+				kirimdata = {
+					statusPembayaran: body.status_pembayaran,
 					updateBy: body.create_update_by
 				}
 				await models.PemenangLelang.update(kirimdata, { where: { idPemenangLelang: body.id_pemenang_lelang } })

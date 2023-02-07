@@ -1,5 +1,5 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../utils/response.utils');
-const { encrypt, decrypt } = require('../utils/helper.utils');
+const { encrypt, decrypt, buildMysqlResponseWithPagination } = require('../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
@@ -13,12 +13,13 @@ const BASE_URL = process.env.BASE_URL
 
 function getAdmin (models) {
   return async (req, res, next) => {
-		let { status_aktif, id_admin, level, sort } = req.query
+		let { status_aktif, id_admin, level, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let order = []
     try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			order = [
-				['createdAt', sort ? sort : 'ASC'],
+				['updatedAt', sort ? sort : 'ASC'],
 			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
@@ -36,25 +37,55 @@ function getAdmin (models) {
 					statusAktif: true
 				}
 			}
-      const dataAdmin = await models.Admin.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ nama : { [Op.like]: `%${keyword}%` }},
+					{ email : { [Op.like]: `%${keyword}%` }},
+					{ '$Role.nama_role$' : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataAdmin } = await models.Admin.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				order
+				include: [
+					{
+						model: models.Role,
+						attributes: ['namaRole']
+					}
+				],
+				order,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
-			const getResult = await Promise.all(dataAdmin.map(async (val) => {
-				let dataRole = await models.Role.findOne({
-					where: { idRole: val.level },
-					attributes: ['namaRole'],
-				});
-	
-				let dataKumpul = Object.assign(val.dataValues, {
-					namaRole: dataRole.namaRole,
-				})
-				return dataKumpul;
-			}))
+			const getResult = dataAdmin.map(val => {
+				return {
+					idAdmin: val.idAdmin,
+					downlineTenant: val.downlineTenant,
+					nama: val.nama,
+					username: val.username,
+					email: val.email,
+					password: val.password,
+					kataSandi: val.kataSandi,
+					noHP: val.noHP,
+					kota: val.kota,
+					alamat: val.alamat,
+					level: val.level,
+					statusAktif: val.statusAktif,
+					namaRole: val.Role.namaRole
+				}
+			})
 
-			return OK(res, getResult);
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -142,12 +173,13 @@ function crudAdmin (models) {
 
 function getPeserta (models) {
   return async (req, res, next) => {
-		let { status_aktif, id_peserta, sort } = req.query
+		let { status_aktif, id_peserta, sort, page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let order = []
     try {
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 			order = [
-				['createdAt', sort ? sort : 'ASC'],
+				['updatedAt', sort ? sort : 'ASC'],
 			]
 
 			if(status_aktif) { 
@@ -159,10 +191,23 @@ function getPeserta (models) {
 					statusAktif: true
 				}
 			}
-      dataProfile = await models.User.findAll({
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ nik : { [Op.like]: `%${keyword}%` }},
+					{ nama : { [Op.like]: `%${keyword}%` }},
+					{ email : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataProfile } = await models.User.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				order
+				order,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
 			const getResult = await Promise.all(dataProfile.map(async (val) => {
@@ -181,7 +226,12 @@ function getPeserta (models) {
 				return dataKumpul;
 			}))
 
-			return OK(res, getResult);
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }

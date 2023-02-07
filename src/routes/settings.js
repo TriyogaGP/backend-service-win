@@ -16,6 +16,11 @@ const {
   getMeasurement,
   getNotification,
   postNotification,
+  getPeserta,
+  getKategoriLelang,
+  getBarangLelang,
+  getEvent,
+  getLot,
 } = require('../controllers/settings.controler')
 const { uploadFile } = require('../middleware/uploadFile')
 const { uploadBerkas } = require('../middleware/uploadBerkas')
@@ -39,6 +44,13 @@ module.exports = models => {
   route.route('/getMeasurement').get(verifyToken, getMeasurement(models))
   route.route('/getNotification').get(getNotification(models))
   route.route('/postNotification').post(verifyToken, postNotification(models))
+
+  //Options Dropdown
+  route.route('/optionUser').get(getPeserta(models))
+  route.route('/optionKategori').get(getKategoriLelang(models))
+  route.route('/optionBarangLelang').get(getBarangLelang(models))
+  route.route('/optionEvent').get(getEvent(models))
+  route.route('/optionLot').get(getLot(models))
   
   return route;
 }
