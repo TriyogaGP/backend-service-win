@@ -1,22 +1,27 @@
 const { Router } = require('express');
 const {
-    getKategoriLelang,
-    getBarangLelang,
-    getEventLelang,
-    getLotLelang,
-    getPembelianNPL,
-    getDataNPL,
-    getListNPLPeserta,
-    getListEvent,
-    crudPembelianNPL,
-    getListPelunasan,
-    crudPelunasanLelang,
+  getHomescreenLelang,
+  getHomescreenLelangBy,
+  getKategoriLelang,
+  getBarangLelang,
+  getEventLelang,
+  getLotLelang,
+  getPembelianNPL,
+  getDataNPL,
+  getListNPLPeserta,
+  getListEvent,
+  crudPembelianNPL,
+  getListPelunasan,
+  crudPelunasanLelang,
+  getPemenangBy,
 } = require('../../controllers/api-controller/lelang.controller')
 const { uploadFile } = require('../../middleware/uploadFile')
 
 module.exports = models => {
   const route = Router();
 
+  route.route('/getHomescreenLelang').get(getHomescreenLelang(models))
+  route.route('/getHomescreenLelangBy').get(getHomescreenLelangBy(models))
   route.route('/getKategoriLelang').get(getKategoriLelang(models))
   route.route('/getBarangLelang').get(getBarangLelang(models))
   route.route('/getEventLelang').get(getEventLelang(models))
@@ -28,6 +33,7 @@ module.exports = models => {
   route.route('/postPembelianNPL').post(uploadFile, crudPembelianNPL(models))
   route.route('/getListPelunasan').get(getListPelunasan(models))
   route.route('/postPelunasanLelang').post(uploadFile, crudPelunasanLelang(models))
+  route.route('/getPemenangBy').get(getPemenangBy(models))
   
   return route;
 }

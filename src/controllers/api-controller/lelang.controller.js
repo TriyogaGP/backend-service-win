@@ -20,6 +20,160 @@ const dotenv = require('dotenv');
 dotenv.config();
 const BASE_URL = process.env.BASE_URL
 
+function getHomescreenLelang (models) {
+  return async (req, res, next) => {
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', 'DESC'],
+			]
+
+      const dataLOT = await models.LOT.findAll({
+				where: {
+					statusAktif: true,
+					statusLot: 2
+				},
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{
+						model: models.BarangLelang,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+						include: [
+							{
+								model: models.KategoriLelang,
+								attributes: ['kategori']
+							},
+						],
+					},
+					{
+						model: models.Event,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+					},
+				],
+				limit: 10,
+				order
+			});	
+
+			const dataFotoBarangLelang = await models.FotoBarangLelang.findAll({
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+			});
+		
+			let record = await Promise.all(dataLOT.map(val => {
+				dataKumpul = dataFotoBarangLelang
+				.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
+				.map(val2 => {
+					let objectBaru = Object.assign(val2, {
+						gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
+					});
+					return objectBaru
+				})
+		
+				return {
+					idLot: val.idLot,
+					idBarangLelang: val.idBarangLelang,
+					idKategori: val.BarangLelang.idKategori,
+					namaKategori: val.BarangLelang.KategoriLelang.kategori,
+					namaBarangLelang: val.BarangLelang.namaBarangLelang,
+					deskripsi: val.BarangLelang.KategoriLelang.kategori === 'Mobil' || val.BarangLelang.KategoriLelang.kategori === 'Motor'
+						? `${val.BarangLelang.kapasitasKendaraan} Seats - ${val.BarangLelang.transmisi}`
+						: `${val.BarangLelang.brand} - ${val.BarangLelang.tipeModel}`,
+					dataFotoBarangLelang: { 
+						FotoUtama: dataKumpul.filter(val => val.kategori == 'Utama'), 
+						FotoKondisi: dataKumpul.filter(val => val.kategori == 'Kondisi')
+					},
+				}
+			}))
+
+			return OK(res, record);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }
+}
+
+function getHomescreenLelangBy (models) {
+  return async (req, res, next) => {
+		let where = {}
+		let order = []
+    try {
+			order = [
+				['createdAt', 'DESC'],
+			]
+
+      const dataLOT = await models.LOT.findAll({
+				where: {
+					statusAktif: true,
+					statusLot: 2
+				},
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{
+						model: models.BarangLelang,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+						include: [
+							{
+								model: models.KategoriLelang,
+								attributes: ['kategori']
+							},
+						],
+					},
+					{
+						model: models.Event,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+					},
+				],
+				order
+			});	
+
+			const dataFotoBarangLelang = await models.FotoBarangLelang.findAll({
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+			});
+		
+			let hasil = await Promise.all(dataLOT.map(val => {
+				dataKumpul = dataFotoBarangLelang
+				.filter(barleng => barleng.idBarangLelang === val.idBarangLelang)
+				.map(val2 => {
+					let objectBaru = Object.assign(val2, {
+						gambar: BASE_URL+'image/kelengkapan-barang-lelang/'+val2.gambar
+					});
+					return objectBaru
+				})
+		
+				return {
+					idLot: val.idLot,
+					idBarangLelang: val.idBarangLelang,
+					idKategori: val.BarangLelang.idKategori,
+					namaKategori: val.BarangLelang.KategoriLelang.kategori,
+					namaBarangLelang: val.BarangLelang.namaBarangLelang,
+					deskripsi: val.BarangLelang.KategoriLelang.kategori === 'Mobil' || val.BarangLelang.KategoriLelang.kategori === 'Motor'
+						? `${val.BarangLelang.kapasitasKendaraan} Seats - ${val.BarangLelang.transmisi}`
+						: `${val.BarangLelang.brand} - ${val.BarangLelang.tipeModel}`,
+					dataFotoBarangLelang: { 
+						FotoUtama: dataKumpul.filter(val => val.kategori == 'Utama'), 
+						FotoKondisi: dataKumpul.filter(val => val.kategori == 'Kondisi')
+					},
+				}
+			}))
+
+			let record = _.chain(hasil).groupBy("idKategori").toPairs().map(val => {
+				return _.zipObject(['idKategori', 'dataLOT'], val)
+			}).value()
+
+			return OK(res, await Promise.all(record.map(async val => {
+				const kategori = await models.KategoriLelang.findOne({ where: { idKategori: val.idKategori } });
+				return {
+					idKategori: val.idKategori,
+					namaKategori: kategori.kategori,
+					dataLOT: val.dataLOT.slice(0, 10),
+				}
+			})));
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }
+}
+
 function getKategoriLelang (models) {
   return async (req, res, next) => {
 		let { sort } = req.query
@@ -46,7 +200,7 @@ function getKategoriLelang (models) {
 
 function getBarangLelang (models) {
   return async (req, res, next) => {
-		let { id_barang_lelang, id_kategori, keyword, id_peserta, sort } = req.query
+		let { id_barang_lelang, id_kategori, keyword, id_peserta, sort, page = 1, limit = 20 } = req.query
 		let where = {}
 		let order = []
     try {
@@ -138,7 +292,21 @@ function getBarangLelang (models) {
 				})
 			}
 
-			return OK(res, await _buildResponseLelang(models, hasilNih));
+			let arrayData = await _buildResponseLelang(models, hasilNih)
+
+			const totalPages = Math.ceil(arrayData.length / Number(limit))
+			const records = arrayData.slice((Number(page) - 1) * Number(limit), Number(page) * Number(limit))
+
+			return OK(res, {
+				records,
+				pageSummary: {
+					hasNext: Number(page) < totalPages,
+					page: Number(page),
+					limit: Number(limit),
+					total: arrayData.length,
+					totalPages,
+				}
+			});
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -214,7 +382,7 @@ function getEventLelang (models) {
 
 function getLotLelang (models) {
   return async (req, res, next) => {
-		let { id_barang_lelang, id_kategori, keyword, id_event, sort } = req.query
+		let { id_barang_lelang, id_kategori, keyword, id_event, sort, page = 1, limit = 20 } = req.query
 		let where = {}
 		let order = []
     try {
@@ -288,7 +456,21 @@ function getLotLelang (models) {
 				return OK(res, hasil[0]);
 			}
 
-			return OK(res, await _buildResponseLotLelang(models, hasilData));
+			let arrayData = await _buildResponseLotLelang(models, hasilData)
+
+			const totalPages = Math.ceil(arrayData.length / Number(limit))
+			const records = arrayData.slice((Number(page) - 1) * Number(limit), Number(page) * Number(limit))
+
+			return OK(res, {
+				records,
+				pageSummary: {
+					hasNext: Number(page) < totalPages,
+					page: Number(page),
+					limit: Number(limit),
+					total: arrayData.length,
+					totalPages,
+				}
+			});
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -389,11 +571,15 @@ function getListNPLPeserta (models) {
 						model: models.PembelianNPL,
 						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 					},
+					{
+						model: models.RefundNPL,
+						attributes: { exclude: ['createBy', 'updateBy', 'createdAt', 'updatedAt'] },
+					},
 				],
 				order
 			});
 
-			return OK(res, await _buildResponseListNPL(dataNPL));
+			return OK(res, await _buildResponseListNPL(models, dataNPL));
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -581,7 +767,84 @@ function crudPelunasanLelang (models) {
   }  
 }
 
+function getPemenangBy (models) {
+  return async (req, res, next) => {
+		let { id_lot } = req.query
+		let order = []
+    try {
+			order = [
+				['createdAt', 'DESC']
+			]
+
+      const dataBidding = await models.Bidding.findOne({
+				where: { idLot: id_lot },
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				include: [
+					{
+						model: models.LOT,
+						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+						include: [
+							{
+								model: models.BarangLelang,
+								attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+								include: [
+									{
+										model: models.KategoriLelang,
+										attributes: ['kategori']
+									},
+								],
+							},
+						],	
+					},
+				],
+				limit: 1,
+				order
+			});
+
+			const dataPemenang = await models.PemenangLelang.findOne({
+				where: { idBidding: dataBidding.idBidding },
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+			})
+
+			let result = {
+				idPemenangLelang: dataPemenang.idPemenangLelang,
+				namaPemenang: dataPemenang.namaPemilik,
+				nominal: dataPemenang.nominal,
+				idBidding: dataBidding.idBidding,
+				idLot: dataBidding.idLot,
+				idNpl: dataBidding.idNpl,
+				isAdmin: dataBidding.isAdmin,
+				idBarangLelang: dataBidding.LOT.BarangLelang.idBarangLelang,
+				namaBarangLelang: dataBidding.LOT.BarangLelang.namaBarangLelang,
+				deskripsi: dataBidding.LOT.BarangLelang.KategoriLelang.kategori === 'Mobil' || dataBidding.LOT.BarangLelang.KategoriLelang.kategori === 'Motor'
+					? dataBidding.LOT.BarangLelang.noPolisi
+					: dataBidding.LOT.BarangLelang.brand
+			}
+
+			let getUser = ''
+			if(result.isAdmin) {
+				getUser = await models.Admin.findOne({where: { idAdmin: result.idNpl }})
+			}else{
+				getNpl = await models.NPL.findOne({where: { idNpl: result.idNpl }})
+				getUser = await models.User.findOne({where: { idPeserta: getNpl.idPeserta }})
+			}
+			
+			return OK(res, {
+				...result,
+				nama: getUser.nama,
+				email: getUser.email,
+				alamat: getUser.alamat,
+				noHP: getUser.noHP
+			});
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
+  getHomescreenLelang,
+  getHomescreenLelangBy,
   getKategoriLelang,
   getBarangLelang,
   getEventLelang,
@@ -593,4 +856,5 @@ module.exports = {
   crudPembelianNPL,
   getListPelunasan,
   crudPelunasanLelang,
+  getPemenangBy,
 }

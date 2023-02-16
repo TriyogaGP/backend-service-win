@@ -212,7 +212,7 @@ async function _buildResponseLotLelang(models, dataLelang) {
 		return {
 			idLot: val.idLot,
 			idBarangLelang: val.idBarangLelang,
-			idKategori: val.idKategori,
+			idKategori: val.BarangLelang.idKategori,
 			namaKategori: val.BarangLelang.KategoriLelang.kategori,
 			noLot: val.noLot,
 			hargaAwal: val.hargaAwal,
@@ -359,7 +359,7 @@ async function _buildResponseDetailLot(models, dataLot) {
 	})
 }
 
-async function _buildResponseListNPL(dataNPL) {
+async function _buildResponseListNPL(models, dataNPL) {
 	let dataKumpul = []
 	dataNPL.map(val => {
 		let kumpul = {
@@ -369,12 +369,14 @@ async function _buildResponseListNPL(dataNPL) {
 			idEvent: val.idEvent,
 			noNpl: val.noNpl,
 			npl: val.npl,
-			statusNPL: val.statusNPL,
+			kodeStatusNPL: val.statusNPL,
+			statusNPL: val.statusNPL === 0 ? 'Belum Digunakan' : val.statusNPL === 1 ? 'Sudah Digunakan' : 'Refund Jaminan',
 			kodeEvent: val.Event.kodeEvent,
 			namaEvent: val.Event.namaEvent,
 			waktuEvent: convertDate(val.Event.tanggalEvent) + " " + val.Event.waktuEvent,
 			jmlNPL: val.PembelianNPL.jmlNPL,
 			verifikasi: val.PembelianNPL.verifikasi,
+			buktiRefund: val.RefundNPL ? BASE_URL+'image/berkas/'+val.RefundNPL.bukti : '',
 			statusAktif: val.statusAktif,
 		}
 		dataKumpul.push(kumpul)
@@ -382,9 +384,15 @@ async function _buildResponseListNPL(dataNPL) {
 	let result = _.chain(dataKumpul).groupBy("namaEvent").toPairs().map(val => {
 		return _.zipObject(['namaEvent', 'dataNPL'], val)
 	}).value()
-	return await Promise.all(result.map(val => {
+	return await Promise.all(result.map(async val => {
+		const dataPembelianNPL = await models.PembelianNPL.findOne({
+			where: { idPembelianNPL: val.dataNPL[0].idPembelianNPL },
+			attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+		});
+
 		let objectBaru = Object.assign(val, {
-			waktuEvent: val.dataNPL[0].waktuEvent
+			waktuEvent: val.dataNPL[0].waktuEvent,
+			bukti: BASE_URL+'image/berkas/'+dataPembelianNPL.bukti,
 		});
 		return objectBaru
 	}))

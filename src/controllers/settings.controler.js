@@ -66,7 +66,7 @@ function updateFile (models) {
 				whereBy = { idPembelianNPL: body.id }
 				await models.PembelianNPL.update(kirimdata, { where: whereBy })
 			}else if(body.table == 't_refund_npl'){ //untuk Refund NPL
-				kirimdata = { idNpl: body.id, bukti: body.nama_folder+'/'+body.namaFile, status_refund: 1, createBy: body.create_update_by }
+				kirimdata = { idNpl: body.id, bukti: body.nama_folder+'/'+body.namaFile, status_refund: 2, createBy: body.create_update_by }
 				await models.RefundNPL.create(kirimdata)
 			}else if(body.table == 't_promosi'){ //untuk Promosi
 				kirimdata = { gambar: body.nama_folder+'/'+body.namaFile }
