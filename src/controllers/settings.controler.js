@@ -7,11 +7,12 @@ const {
 	_buildResponseBarangLelang,
 	_buildResponseLot,
 } = require('../utils/build-response');
-const { encrypt, decrypt, convertDateTime, dateconvert, convertDate } = require('../utils/helper.utils')
+const { encrypt, decrypt, convertDateTime, dateconvert, convertDate, buildMysqlResponseWithPagination, buildOrderQuery } = require('../utils/helper.utils')
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const { logger } = require('../configs/db.winston')
 const dotenv = require('dotenv');
+const _ = require('lodash');
 dotenv.config();
 const BASE_URL = process.env.BASE_URL
 
@@ -154,9 +155,31 @@ function getDecrypt () {
 
 function getRole (models) {
   return async (req, res, next) => {
+		let { page = 1, limit = 10, keyword } = req.query
+		let where = {}
     try {
-      const dataRole = await models.Role.findAll();
-			return OK(res, dataRole);
+      const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ namaRole : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+			const { count, rows: dataRole } = await models.Role.findAndCountAll({
+				where,
+				limit: parseInt(limit),
+				offset: OFFSET,
+			});
+
+			const responseData = buildMysqlResponseWithPagination(
+				dataRole,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -165,16 +188,31 @@ function getRole (models) {
 
 function getMenu (models) {
   return async (req, res, next) => {
-		let { idRole } = req.query
+		let { idRole, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
     try {
-			if(idRole) {
-				where = {
-					idRole: idRole,
-					status: true
-				}
-			}
-      const dataMenu = await models.Menu.findAll({
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const mappingSortField = [
+        'menuText', 'position', 'status',
+        ['namaRole', ['Role', 'namaRole']],
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['idRole', 'ASC'],['position', 'ASC']);
+      }
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ menuText : { [Op.like]: `%${keyword}%` }},
+					{ menuRoute : { [Op.like]: `%${keyword}%` }},
+				]
+			} : idRole ? { idRole: idRole, status: true } : {}
+
+			where = whereKey
+
+      const { count, rows: dataMenu } = await models.Menu.findAndCountAll({
 				where,
 				include: [
 					{
@@ -182,12 +220,55 @@ function getMenu (models) {
 						attributes: ['idRole', 'namaRole']
 					}
 				],
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
+			});
+		
+			let getResult = await _buildResponseMenu(dataMenu)
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
+function getMenuSequence (models) {
+  return async (req, res, next) => {
+    try {
+      const dataMenu = await models.Menu.findAll({
+				where: { status: true },
+				include: [
+					{
+						model: models.Role,
+						attributes: ['idRole', 'namaRole']
+					}
+				],
 				order: [
+					['idRole', 'ASC'],
 					['position', 'ASC'],
-				]
+				],
 			});
 
-			return OK(res, await _buildResponseMenu(dataMenu));
+			let getResult = await _buildResponseMenu(dataMenu)
+			
+			let record = _.chain(getResult).groupBy("namaRole").toPairs().map(val => {
+				return _.zipObject(['namaRole', 'dataMenu'], val)
+			}).value()
+			
+			return OK(res, await Promise.all(record.map(val => {
+				return {
+					idRole: val.dataMenu[0].idRole,
+					namaRole: val.namaRole,
+					dataMenu: val.dataMenu,
+				}
+			})));
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -199,7 +280,27 @@ function postMenu (models) {
 		let body = { ...req.body }
     try {
 			let kirimdata;
-			if(body.jenis == 'EDIT'){
+			if(body.jenis == 'ADD'){
+				where = { 
+					[Op.or]: [
+						{ menuRoute: body.menu_route },
+						{ menuText: body.menu_text }
+					]
+				}
+				const {count, rows} = await models.Menu.findAndCountAll({where});
+				if(count) return NOT_FOUND(res, 'data sudah di gunakan !')
+				let dataCek = await models.Menu.findOne({where: {idRole: body.id_role, status: true}, limit: 1, order: [['idMenu', 'DESC']]})
+				let urutan = dataCek.position + 1
+				kirimdata = {
+					idRole: body.id_role,
+					menuText: body.menu_text,
+					menuRoute: body.menu_route,
+					menuIcon: body.menu_icon,
+					position: urutan,
+					status: 1,
+				}
+				await models.Menu.create(kirimdata)
+			}else if(body.jenis == 'EDIT'){
 				if(await models.Menu.findOne({where: {[Op.not]: [{menuText: body.menu_text, menuRoute: body.menu_route}], [Op.not]: [{idMenu: body.id_menu}]}})) return NOT_FOUND(res, 'Menu Label sudah di gunakan !')
 				kirimdata = {
 					idRole: body.id_role,
@@ -231,16 +332,52 @@ function postMenu (models) {
   }  
 }
 
+function postSequenceMenu (models) {
+  return async (req, res, next) => {
+		let body = { ...req.body }
+    try {
+			const { Menu } = body
+			await Menu.map(async (val, i) => {
+				await models.Menu.update({ position: i + 1 }, { where: { idMenu: val.idMenu } })
+			})
+			return OK(res, Menu);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 function getKurir (models) {
   return async (req, res, next) => {
-		let { idKurir } = req.query;
+		let { idKurir, sort = '', page = 1, limit = 10, keyword } = req.query;
 		let where = {}
     try {
-			if(idKurir) { where.idKurir = idKurir }
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
 
-			const dataKurir = await models.Kurir.findAll({
+			const mappingSortField = [
+        'namaKurir', 'label', 'statusAktif',
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['createdAt', 'DESC']);
+      }
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ namaKurir : { [Op.like]: `%${keyword}%` }},
+					{ label : { [Op.like]: `%${keyword}%` }},
+				]
+			} : idKurir ? { idKurir: idKurir, statusAktif: true } : {}
+
+			where = whereKey
+
+			const { count, rows: dataKurir } = await models.Kurir.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
 			let dataKumpul = []
@@ -249,7 +386,14 @@ function getKurir (models) {
 				return dataKumpul.push(objectBaru)
 			})
 
-			return OK(res, await _buildResponseKurir(models, dataKumpul));
+			let getResult = await _buildResponseKurir(models, dataKumpul)
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -274,15 +418,38 @@ function getKurirServiceBy (models) {
 
 function getPayment (models) {
   return async (req, res, next) => {
-		let { idPayment } = req.query
+		let { idPayment, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
     try {
-			if(idPayment) {
-				where.idPayment = idPayment
-			}
-			const dataPaymentMethod= await models.PaymentMethod.findAll({
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const mappingSortField = [
+        'kodeBank', 'namaBankDisplay', 'kodeBankProduct', 'pajakBank', 'kategori', 'statusAktif',
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['createdAt', 'DESC']);
+      }
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ kodeBank : { [Op.like]: `%${keyword}%` }},
+					{ namaBankDisplay : { [Op.like]: `%${keyword}%` }},
+					{ kodeBankProduct : { [Op.like]: `%${keyword}%` }},
+					{ pajakBank : { [Op.like]: `%${keyword}%` }},
+					{ kategori : { [Op.like]: `%${keyword}%` }},
+				]
+			} : idPayment ? { idPayment: idPayment, statusAktif: true } : {}
+
+			where = whereKey
+
+			const { count, rows: dataPaymentMethod } = await models.PaymentMethod.findAndCountAll({
 				where,
-				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
+				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 			
 			let dataKumpul = []
@@ -291,7 +458,12 @@ function getPayment (models) {
 				return dataKumpul.push(objectBaru)
 			})
 
-			return OK(res, dataKumpul);
+			const responseData = buildMysqlResponseWithPagination(
+				dataKumpul,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -333,17 +505,52 @@ function getWilayah (models) {
 
 function getLoggerAdmin (models) {
   return async (req, res, next) => {
+		const { sort = '', page = 1, limit = 10, keyword } = req.query
+    let where = {}
     try {
-      const dataLoggerAdmin = await models.LoggerAdmin.findAll({
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const mappingSortField = [
+        'provinsi', 'kota', 'createdAt',
+        ['nama', ['Admin', 'nama']],
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['createdAt', 'DESC']);
+      }
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ provinsi : { [Op.like]: `%${keyword}%` }},
+					{ kota : { [Op.like]: `%${keyword}%` }},
+					{ '$Admin.nama$' : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataLoggerAdmin } = await models.LoggerAdmin.findAndCountAll({
+				where,
 				include: [
 					{
 						model: models.Admin,
 						attributes: ['nama']
 					}
 				],
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
-			return OK(res, await _buildResponseLoggerAdmin(dataLoggerAdmin));
+			let getResult = await _buildResponseLoggerAdmin(dataLoggerAdmin)
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -352,17 +559,52 @@ function getLoggerAdmin (models) {
 
 function getLoggerPeserta (models) {
   return async (req, res, next) => {
+    const { sort = '', page = 1, limit = 10, keyword } = req.query
+    let where = {}
     try {
-      const dataLoggerPeserta = await models.LoggerPeserta.findAll({
+			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
+
+			const mappingSortField = [
+        'provinsi', 'kota', 'createdAt',
+        ['nama', ['User', 'nama']],
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['createdAt', 'DESC']);
+      }
+
+			const whereKey = keyword ? {
+				[Op.or]: [
+					{ provinsi : { [Op.like]: `%${keyword}%` }},
+					{ kota : { [Op.like]: `%${keyword}%` }},
+					{ '$User.nama$' : { [Op.like]: `%${keyword}%` }},
+				]
+			} : {}
+
+			where = whereKey
+
+      const { count, rows: dataLoggerPeserta } = await models.LoggerPeserta.findAndCountAll({
+				where,
 				include: [
 					{
 						model: models.User,
 						attributes: ['nama']
 					}
 				],
+				order: orders,
+				limit: parseInt(limit),
+				offset: OFFSET,
 			});
 
-			return OK(res, await _buildResponseLoggerPeserta(dataLoggerPeserta));
+			let getResult = await _buildResponseLoggerPeserta(dataLoggerPeserta)
+
+			const responseData = buildMysqlResponseWithPagination(
+				getResult,
+				{ limit, page, total: count }
+			)
+
+			return OK(res, responseData);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -691,6 +933,17 @@ function getLot (models) {
   }  
 }
 
+function optionRole (models) {
+  return async (req, res, next) => {
+    try {
+			const dataRole = await models.Role.findAll();
+			return OK(res, dataRole);
+    } catch (err) {
+			return NOT_FOUND(res, err.message)
+    }
+  }  
+}
+
 module.exports = {
   updateFile,
   updateBerkas,
@@ -698,7 +951,9 @@ module.exports = {
   getDecrypt,
   getRole,
   getMenu,
+  getMenuSequence,
   postMenu,
+  postSequenceMenu,
   getKurir,
   getKurirServiceBy,
   getPayment,
@@ -713,4 +968,5 @@ module.exports = {
 	getBarangLelang,
 	getEvent,
 	getLot,
+	optionRole,
 }

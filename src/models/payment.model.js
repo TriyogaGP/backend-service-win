@@ -16,7 +16,7 @@ const PaymentMethodScheme = Sequelize => {
       allowNull: true,
       field: 'kode_bank',
     },
-    namaDisplay: {
+    namaBankDisplay: {
       type: DataTypes.STRING(256),
       allowNull: true,
       field: 'nama_bank_display',

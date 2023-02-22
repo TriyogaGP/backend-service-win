@@ -1,5 +1,5 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../utils/response.utils');
-const { encrypt, decrypt, buildMysqlResponseWithPagination } = require('../utils/helper.utils');
+const { encrypt, decrypt, buildMysqlResponseWithPagination, buildOrderQuery } = require('../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
@@ -13,14 +13,10 @@ const BASE_URL = process.env.BASE_URL
 
 function getAdmin (models) {
   return async (req, res, next) => {
-		let { status_aktif, id_admin, level, sort, page = 1, limit = 10, keyword } = req.query
+		let { status_aktif, id_admin, level, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
-		let order = []
     try {
 			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-			order = [
-				['updatedAt', sort ? sort : 'ASC'],
-			]
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 				
@@ -37,6 +33,16 @@ function getAdmin (models) {
 					statusAktif: true
 				}
 			}
+
+			const mappingSortField = [
+        'nama',
+        ['namaRole', ['Role', 'namaRole']],
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['updatedAt', 'DESC']);
+      }
 
 			const whereKey = keyword ? {
 				[Op.or]: [
@@ -57,7 +63,7 @@ function getAdmin (models) {
 						attributes: ['namaRole']
 					}
 				],
-				order,
+				order: orders,
 				limit: parseInt(limit),
 				offset: OFFSET,
 			});
@@ -79,6 +85,26 @@ function getAdmin (models) {
 					namaRole: val.Role.namaRole
 				}
 			})
+
+			// if(sort){
+			// 	let sorting = JSON.parse(sort)
+			// 	let fieldName = sorting.sortBy
+			// 	let order = await Promise.all(sorting.sortDesc.map(val => {
+			// 		const hasil = []	
+			// 		if(val){
+			// 			hasil.push(`desc`)
+			// 		}else{
+			// 			hasil.push(`asc`)
+			// 		}
+			// 		return hasil[0]
+			// 	}))
+			// 	const responseData = buildMysqlResponseWithPagination(
+			// 		_.orderBy(getResult, fieldName, order),
+			// 		{ limit, page, total: count }
+			// 	)
+	
+			// 	return OK(res, responseData);
+			// }
 
 			const responseData = buildMysqlResponseWithPagination(
 				getResult,
@@ -173,14 +199,10 @@ function crudAdmin (models) {
 
 function getPeserta (models) {
   return async (req, res, next) => {
-		let { status_aktif, id_peserta, sort, page = 1, limit = 10, keyword } = req.query
+		let { status_aktif, id_peserta, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
-		let order = []
     try {
 			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-			order = [
-				['updatedAt', sort ? sort : 'ASC'],
-			]
 
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
@@ -191,6 +213,15 @@ function getPeserta (models) {
 					statusAktif: true
 				}
 			}
+
+			const mappingSortField = [
+        'nama', 'nik'
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['updatedAt', 'DESC']);
+      }
 
 			const whereKey = keyword ? {
 				[Op.or]: [
@@ -205,7 +236,6 @@ function getPeserta (models) {
       const { count, rows: dataProfile } = await models.User.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				order,
 				limit: parseInt(limit),
 				offset: OFFSET,
 			});
@@ -214,7 +244,6 @@ function getPeserta (models) {
 				let dataAddress = await models.Address.findAll({
 					where: { idPeserta: val.idPeserta },
 					attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-					order
 				});
 	
 				let dataKumpul = Object.assign(val.dataValues, {

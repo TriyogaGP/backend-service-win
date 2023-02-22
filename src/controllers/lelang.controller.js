@@ -1,6 +1,6 @@
 const { response, OK, NOT_FOUND, NO_CONTENT } = require('../utils/response.utils');
 const { _buildResponseBarangLelang, _buildResponseLot, _buildResponseNPL, _buildResponsePemenang, _buildResponseRoom, _buildResponseBidLelang } = require('../utils/build-response');
-const { encrypt, decrypt ,convertDate, dateconvert, buildMysqlResponseWithPagination } = require('../utils/helper.utils');
+const { encrypt, decrypt ,convertDate, dateconvert, buildMysqlResponseWithPagination, buildOrderQuery } = require('../utils/helper.utils');
 const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const bcrypt = require('bcrypt');
@@ -108,19 +108,25 @@ function crudKategoriLelang (models) {
 
 function getBarangLelang (models) {
   return async (req, res, next) => {
-		let { status_aktif, sort, page = 1, limit = 10, keyword } = req.query
+		let { status_aktif, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
-		let order = []
     try {
 			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-			order = [
-				['updatedAt', sort ? sort : 'ASC'],
-			]
 
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
 
+			const mappingSortField = [
+        'namaBarangLelang', 'statusAktif',
+        ['kategori', ['KategoriLelang', 'kategori']],
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['updatedAt', 'DESC']);
+      }
+			
 			const whereKey = keyword ? {
 				[Op.or]: [
 					{ '$KategoriLelang.kategori$' : { [Op.like]: `%${keyword}%` }},
@@ -143,7 +149,7 @@ function getBarangLelang (models) {
 						attributes: ['kategori', 'statusAktif']
 					}
 				],
-				order,
+				order: orders,
 				limit: parseInt(limit),
 				offset: OFFSET,
 			});
@@ -314,18 +320,25 @@ function crudBarangLelang (models) {
 
 function getEvent (models) {
   return async (req, res, next) => {
-		let { status_aktif, sort, page = 1, limit = 10, keyword } = req.query
+		let { status_aktif, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
-		let order = []
     try {
 			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-			order = [
-				['updatedAt', sort ? sort : 'ASC'],
-			]
 
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
+
+			const mappingSortField = [
+        'kodeEvent', 'namaEvent', 'statusAktif',
+				['tanggalevent', sequelize.col('`tanggalevent`')],
+				'kelipatanBid'
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['updatedAt', 'DESC']);
+      }
 
 			const whereKey = keyword ? {
 				[Op.or]: [
@@ -341,7 +354,7 @@ function getEvent (models) {
       const { count, rows: dataEvent } = await models.Event.findAndCountAll({
 				where,
 				attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
-				order,
+				order: orders,
 				limit: parseInt(limit),
 				offset: OFFSET,
 			});
@@ -452,14 +465,10 @@ function crudEvent (models) {
 
 function getLot (models) {
   return async (req, res, next) => {
-		let { id_event, status_aktif, sort, page = 1, limit = 10, keyword } = req.query
+		let { id_event, status_aktif, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
-		let order = []
     try {
 			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-			order = [
-				['updatedAt', sort ? sort : 'ASC'],
-			]
 
 			if(id_event) { 
 				where.idEvent = id_event 
@@ -468,6 +477,18 @@ function getLot (models) {
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
+
+			const mappingSortField = [
+        'noLot', 'hargaAwal', 'statusLot', 'statusAktif',
+				['tanggalevent', sequelize.col('`tanggalevent`')],
+				['namaBarangLelang', sequelize.literal('`BarangLelang.namaBarangLelang`')],
+				['namaEvent', sequelize.literal('`Event.namaEvent`')],
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['updatedAt', 'DESC']);
+      }
 
 			const whereKey = keyword ? {
 				[Op.or]: [
@@ -500,7 +521,7 @@ function getLot (models) {
 						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
 					},
 				],
-				order,
+				order: orders,
 				limit: parseInt(limit),
 				offset: OFFSET,
 			});
@@ -598,7 +619,7 @@ function crudLot (models) {
 
 function getNPL (models) {
   return async (req, res, next) => {
-		let { kategori, id_event, id_peserta, status_aktif, sort, page = 1, limit = 10, keyword } = req.query
+		let { kategori, id_event, id_peserta, status_aktif, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
     try {
@@ -614,6 +635,17 @@ function getNPL (models) {
 			if(id_peserta) { 
 				where.idPeserta = id_peserta
 			}
+
+			const mappingSortField = [
+        'jmlNPL', 'nominal', 'verifikasi',  
+				['namaEvent', sequelize.literal('`Event.namaEvent`')],
+				['nama', sequelize.literal('`User.nama`')],
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['updatedAt', 'DESC']);
+      }
 
 			const whereKey = keyword ? {
 				[Op.or]: [
@@ -640,9 +672,7 @@ function getNPL (models) {
 						attributes,
 					},
 				],
-				order: [
-					['updatedAt', sort ? sort : 'ASC'],
-				],
+				order: orders,
 				limit: parseInt(limit),
 				offset: OFFSET,
 			});
@@ -699,7 +729,7 @@ function getManajemenNPL (models) {
 						attributes: { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] },
 					},
 				],
-				order
+				order,
 			});
 
 			let dataKumpul = []
@@ -717,7 +747,20 @@ function getManajemenNPL (models) {
 				return _.zipObject(['kategori', 'dataManajemenNPL'], val)
 			}).value()
 
-			return OK(res, result);
+			let record = await Promise.all(result.map(async val => {
+				let dataManajemen = []
+				await val.dataManajemenNPL.map((str, i) => {
+					if(i <= 1){
+						return dataManajemen.push(str)
+					}
+				})
+				return {
+					kategori: val.kategori,
+					nominal: val.dataManajemenNPL[0].nominal,
+					dataManajemenNPL: dataManajemen }
+			}))
+
+			return OK(res, record);
     } catch (err) {
 			return NOT_FOUND(res, err.message)
     }
@@ -852,19 +895,24 @@ function crudNPL (models) {
 
 function getPemenang (models) {
 	return async (req, res, next) => {
-		let { status_aktif, sort, page = 1, limit = 10, keyword } = req.query
+		let { status_aktif, sort = '', page = 1, limit = 10, keyword } = req.query
 		let where = {}
-		let order = []
 		let attributes = { exclude: ['createBy', 'updateBy', 'deleteBy', 'createdAt', 'updatedAt', 'deletedAt'] }
 	  try {
 			const OFFSET = page > 0 ? (page - 1) * parseInt(limit) : undefined
-		  order = [
-			  ['createdAt', sort ? sort : 'ASC'],
-		  ]
 
 			if(status_aktif) { 
 				where.statusAktif = status_aktif 
 			}
+
+			const mappingSortField = [
+        'nominal', 'statusPembayaran', 'statusAktif'
+      ];
+      const orders = buildOrderQuery(sort, mappingSortField);
+
+      if (orders.length === 0) {
+        orders.push(['updatedAt', 'DESC']);
+      }
 
 			const whereKey = keyword ? {
 				[Op.or]: [
@@ -913,12 +961,31 @@ function getPemenang (models) {
 						],
 					},
 				],
-				order,
+				order: orders,
 				limit: parseInt(limit),
 				offset: OFFSET,
 			});
 
 			const getResult = await _buildResponsePemenang(models, dataPemenang);
+
+			if(sort){
+				let sorting = sort.split(',')
+				let fieldName = []
+				let order = []
+				sorting.filter(str => {
+					if(str === 'namaPemenang-ASC' || str === 'namaPemenang-DESC'){
+						const stringSplit = str.split('-')
+						fieldName.push('details.nama','namaPemilik')
+						order.push(_.toLower(stringSplit[1]),_.toLower(stringSplit[1]))
+					}
+				})
+				const responseData = buildMysqlResponseWithPagination(
+					_.orderBy(getResult, fieldName, order),
+					{ limit, page, total: count }
+				)
+	
+				return OK(res, responseData);
+			}
 
 			const responseData = buildMysqlResponseWithPagination(
 				getResult,

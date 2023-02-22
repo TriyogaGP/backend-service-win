@@ -156,6 +156,40 @@ function buildMysqlResponseWithPagination(records, params) {
 	};
 }
 
+const buildOrderQuery = (sortQuery, params = []) => {
+  const allowedField = [];
+  const mappingField = [];
+
+  params.forEach(val => {
+    if (typeof val === 'string') {
+      allowedField.push(val);
+    } else {
+      mappingField.push(val);
+      allowedField.push(val[0]);
+    }
+  });
+
+  return sortQuery.split(',').map(val => val.split('-')).filter(order => {
+    // eslint-disable-next-line max-len
+    const isAllowedfield = (allowedField.find(val => val === order[0]) || params.length < 1);
+    const isAllowedSort = [
+      'ASC', 'DESC',
+      'asc', 'desc',
+    ].find(val => val == order[1]);
+
+    return isAllowedfield && isAllowedSort;
+  }).map(order => {
+    const findOrder = mappingField.find(val => val[0] === order[0]);
+    if (findOrder) {
+      if (Array.isArray(findOrder[1])) {
+        return [...findOrder[1], order[1]];
+      }
+      return [findOrder[1], order[1]];
+    }
+    return order;
+  });
+};
+
 module.exports = {
   	encrypt,
 	decrypt,
@@ -169,4 +203,5 @@ module.exports = {
 	convertDateTime2,
 	convertDateGabung,
 	buildMysqlResponseWithPagination,
+	buildOrderQuery,
 }
